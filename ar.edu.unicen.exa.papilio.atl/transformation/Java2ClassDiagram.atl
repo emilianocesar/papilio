@@ -1,0 +1,916 @@
+-- @path java=/TesisProject/metamodels/java.ecore
+-- @path UML=/TesisProject/metamodels/UML.ecore
+
+
+module Java2ClassDiagram;
+create OUT: UML from IN: java;
+
+--variables globales
+
+--asocia cada generic type java con la clase correspondiente en UML 
+helper def: templateTypes : Map(java!TypeDeclaration, UML!TemplateableElement) = Map {};
+
+--asocia cada parameterizedType java con el tipo UML generado para el mismo 
+helper def: parameterizedTypes : Map(java!ParameterizedType, UML!Type) = Map {};
+
+--metodos helper
+
+--Obtiene el paquete UML que contiene al elemento pasado como parametro 
+helper def: getContainerPackage(element:OclAny): UML!Package =
+	if(element.oclIsKindOf(UML!Package)) then
+		element
+	else
+		thisModule.getContainerPackage(element.refImmediateComposite())
+endif
+;
+
+--Verifica si una clase java es subclase de otra. Devuelve true si la clase posee
+--una superclase, false en caso contrario
+helper context java!ClassDeclaration def: hasSuperClass(): Boolean =
+	not self.superClass.oclIsUndefined();
+
+--Verifica si el tipo pasado com parametro es un tipo primitivo java
+helper context java!Type def: isPrimitiveType(): Boolean =
+	 
+			self.oclIsTypeOf(java!PrimitiveTypeInt) 
+			or self.oclIsTypeOf(java!PrimitiveTypeShort) 
+			or self.oclIsTypeOf(java!PrimitiveTypeLong) 
+			or self.oclIsTypeOf(java!PrimitiveTypeByte)
+			or self.oclIsTypeOf(java!PrimitiveTypeFloat)
+			or self.oclIsTypeOf(java!PrimitiveTypeDouble)
+			or self.oclIsTypeOf(java!PrimitiveTypeBoolean) 
+			or self.oclIsTypeOf(java!PrimitiveTypeChar)
+			or self.oclIsTypeOf(java!PrimitiveTypeVoid)
+			or self.isJavaString()
+	;
+
+--Indica si un fragmento de una declaracion de variable es un atributo de una clase Java
+--de tipo referencia
+helper context java!VariableDeclarationFragment def: isAssociation(): Boolean =
+	
+	if (self.variablesContainer.oclIsTypeOf(java!FieldDeclaration)) then
+		if(not self.variablesContainer.type.oclIsUndefined()) then
+			if (self.variablesContainer.type.type.isModelReference()) then
+				true
+			else
+				false
+			endif
+		else
+			false
+		endif
+	else
+		false
+	endif
+;
+
+--Indica si el tipo Java pasado como parametro hace 
+--referencia a una clase definida en el modelo
+helper context java!Type def: isModelReference(): Boolean =
+	
+	self.isClassType() and self.proxy = false
+	or if (self.isArrayType()) then
+	--si el tipo es un arreglo, me fijo si los elementos contenidos
+	--hacen referencia a una clase dentro del modelo
+			self.elementType.type.isClassType() and self.elementType.type.proxy = false
+		else
+			false
+		endif
+	or if (self.oclIsTypeOf(java!ParameterizedType))then
+		if (self.type.type.isCollectionType()) then
+		--si el tipo es una coleccion parametrizada me fijo si el
+		--argumento es una referencia a una clase dentro del modelo
+			let argument:java!Type = self.getCollectionArgument()
+			in argument.isClassType() and argument.proxy = false
+	   else if(self.type.type.isMapType())then
+	   --si el tipo es un mapa parametrizado, me fijo si el tipo
+	   --de los objetos guardados es una referencia a una clase en el modelo
+	   			let argument:java!Type = self.getMapArgument()
+				in argument.isClassType() and argument.proxy = false
+			else
+				--me fijo si el elemento es un tipo parametrizado
+				--definido dentro del modelo
+				self.type.type.proxy = false
+			endif
+		endif
+		else
+			false
+	   endif
+;
+
+--Devuelve una referencia al tipo uml pasado como parametro.
+helper def: getUMLPrimitiveTypeReference(typename: String): UML!Type =
+	
+		UML!DataType.allInstances() -> select(t | typename = t.name) -> first()
+;
+
+--Obtiene el paquete UML donde debe agregarse un tipo parametrizado
+--Este paquete es el paquete que contiene a la clase template a la que
+--corresponde el tipo
+helper def: getTemplateTypeContainer(javatemplate: java!ClassDeclaration):UML!Package =
+	if(thisModule.templateTypes.containsKey(javatemplate))then
+			thisModule.templateTypes.get(javatemplate).refImmediateComposite()
+	else 
+		--si no encuentro la ubicacion devuelvo el root
+		UML!Model.allInstances()->first()
+	endif
+;
+
+--Devuelve una referencia al tipo primitivo 'Unknown'
+--Este tipo es asignado a un elemento, cuando el tipo
+--del mismo no es ninguno de los tipos reconocidos
+helper def: getUnknownTypeReference():UML!PrimitiveType =
+
+	let unknownType: Sequence(UML!PrimitiveType) 
+		= UML!DataType.allInstances() -> select(t | t.name = 'Unknown')
+	in
+		if (unknownType -> notEmpty()) then
+			unknownType -> first()
+		else
+			thisModule.createUMLPrimitiveType('Unknown')
+		endif
+;
+	
+--Verifica si el atributo java pasado como parametro es de tipo String
+helper context java!Type def: isJavaString(): Boolean =
+	self.oclIsTypeOf(java!ClassDeclaration) and self.name = 'String';
+
+--Verifica si el tipo pasado como parametro es una referencia
+--a una clase, una interface o una enumeration
+helper context java!Type def: isClassType(): Boolean =
+	self.oclIsKindOf(java!TypeDeclaration) or self.oclIsTypeOf(java!EnumDeclaration);
+
+--Verifica si el tipo pasado como parametro es una clase Java parametrizada
+helper context java!Type def: isParameterizedType(): Boolean =
+	self.oclIsTypeOf(java!ParameterizedType);
+
+--Verifica si el tipo de un elemento es un parametro formal
+-- de un java generic type
+helper context java!Type def: isTypeParameter(): Boolean =
+	self.oclIsTypeOf(java!TypeParameter);
+
+--Verifica si el tipo pasado como parametro es un array Java
+helper context java!Type def: isArrayType(): Boolean =
+	self.oclIsTypeOf(java!ArrayType);
+
+--Obtiene el tipo del argumento para la coleccion parametrizada pasada como parametro 
+helper context java!ParameterizedType def: getCollectionArgument(): java!Type =
+	
+	self.typeArguments -> first().type
+;
+
+--Obtiene el tipo del argumento para el Map pasado como parametro 
+helper context java!ParameterizedType def: getMapArgument(): java!Type =
+	
+	self.typeArguments -> at(2).type
+;
+
+--Obtiene el tipo UML al que se debe convertir el tipo Java pasado como parametro
+-- Si el tipo Java es un tipo primitivo, se obtiene una referencia al tipo UML correspondiente
+-- Si el tipo del atributo Java es una clase, una interface o una Enumeration, se asigna el elemento UML que resulta de aplicar la transformación a este tipo Java
+-- Si el tipo Java es un parámetro formal de un Java generic type, se asigna como tipo la transformación de dicho parámetro a UML
+-- Si el tipo Java es un array, se asigna el elemento UML correspondiente al tipo de los elementos contenidos en el array
+helper def: getType(javatype: java!Type): OclAny =
+	
+	if (javatype.isPrimitiveType()) then					
+		thisModule.getUMLPrimitiveTypeReference(javatype.name.toLower())
+	else if (javatype.isClassType() or javatype.isTypeParameter()) then
+			javatype
+		 else
+		 	if(javatype.isArrayType()) then
+				thisModule.getType(javatype.elementType.type)
+			 else if(javatype.isParameterizedType()) then
+			 			thisModule.getParameterizedType(javatype)
+				   	 else
+						thisModule.getUnknownTypeReference()
+				  endif
+			endif
+		endif
+	endif
+;
+
+--Obtiene el tipo UML correspondiente para una instanciación de un tipo genérico Java
+-- Si el tipo parametrizado es una Collection, retorna el tipo de los objetos contenidos en la collection
+-- Si el tipo parametrizado es un Map, retorna el tipo de los objetos contenidos en el mapa (values)
+-- Si no se trata de ninguno de los casos anteriores, retorna el tipo UML
+-- creado para esa instanciación de tipo genérico Java
+helper def: getParameterizedType(javaparam: java!ParameterizedType): UML!Type =
+
+		if(javaparam.type.type.isCollectionType()) then
+			javaparam.getCollectionArgument()
+		else 
+			if (javaparam.type.type.isMapType()) then
+				javaparam.getMapArgument()
+			 else 
+			 	if(thisModule.parameterizedTypes.containsKey(javaparam)) then
+			    	thisModule.parameterizedTypes.get(javaparam)
+				else
+			 		javaparam.type.type
+				endif
+			endif
+		endif
+;
+		
+
+helper context java!Modifier def: isFinal(): Boolean =
+	self.inheritance = #final
+;
+
+helper context java!Modifier def: isAbstract(): Boolean =
+	
+	self.inheritance <> #none and self.inheritance <> #final   
+--	no me deja preguntar por #abstract porque lo toma como una palabra reservada
+;
+
+--Obtiene el valor de visibilidad uml en base a la visibilidad del atributo 
+--java pasado como parametro
+--La visibilidad por defecto es #public
+helper def: getUMLVisibility(modifier: java!Modifier): UML!VisibilityKind =
+	if (modifier.visibility = #private) then
+		#private
+	else if (modifier.visibility = #protected) then
+			#protected
+		 else
+		 	#public
+		endif
+	endif;
+
+--Devuelve el nombre de la asociación para la propiedad de tipo referencia 
+--pasada como parametro
+
+helper def: getAssociationName(propName:String, opPropName:String): String =
+	
+	'A_' + propName + '_' + opPropName.toLowerFirst()
+;
+
+--Convierte a minusculas el primer caracter del string pasado como parametro
+helper context String def: toLowerFirst(): String =
+	self.substring(1,1).toLower().concat(self.substring(2,self.size()))
+;
+	
+--Indica si el fragmento pasado como parametro es un atributo de clase de alguna
+--clase o interface definida dentro del modelo
+helper context java!VariableDeclarationFragment def: isClassField(): Boolean =
+	
+	if (self.variablesContainer.oclIsTypeOf(java!FieldDeclaration)) then
+		self.variablesContainer.abstractTypeDeclaration.oclIsKindOf(java!TypeDeclaration)
+	else
+		false
+	endif
+;
+
+--Selecciona los elementos de tipo Clase o Interface anidados 
+--dentro de una clase o Interface Java
+helper def: selectNestedClassifiers(body: Sequence(java!BodyDeclaration)): Sequence(java!AbstractTypeDeclaration) =
+	
+	body -> select(elem | elem.oclIsKindOf(java!AbstractTypeDeclaration))
+;
+
+--Selecciona aquellos elementos dentro de las bodyDeclarations de una clase 
+--que son de tipo FieldDeclaration
+helper def: selectFieldDeclarations(body: Sequence(java!BodyDeclaration)): Sequence(java!VariableDeclarationFragment) =
+	
+	body -> iterate(elem; result:Sequence(java!VariableDeclarationFragment)=Sequence{} | 
+		if elem.oclIsTypeOf(java!FieldDeclaration) then
+			result -> union(elem.fragments)
+		else
+			result
+		endif
+	)
+;
+
+--Selecciona los fragmentos dentro de las bodyDeclarations de una clase 
+--que son de tipo ConstructorDeclaration o MethodDeclaration
+helper def: selectMethodDeclarations(body: Sequence(java!BodyDeclaration)): Sequence(java!MethodDeclaration) =
+	
+	body -> select(elem |  elem.oclIsTypeOf(java!ConstructorDeclaration) or elem.oclIsTypeOf(java!MethodDeclaration))
+;
+
+--Devuelve la secuencia de elementos que deben ser incluidos dentro de un paquete
+--al realizar la transformacion de un paquete Java a un paquete UML
+--Estos son los paquetes contenidos mas los elementos del paquete actual  
+helper context java!Package def: selectPackagedElements(): Sequence(java!NamedElement) =
+	
+	self.ownedPackages -> union(self.ownedElements -> select(elem | elem.oclIsKindOf(java!TypeDeclaration) or elem.oclIsTypeOf(java!EnumDeclaration)))
+;
+
+--Crea tipos UML para los tipos primitivos Java invocando a la regla
+--createUMLPrimitiveType
+helper def: createJavaPrimitiveTypes(): Sequence(UML!PrimitiveType) =
+	
+	Sequence {
+		thisModule.createUMLPrimitiveType('byte'),
+		thisModule.createUMLPrimitiveType('short'),
+		thisModule.createUMLPrimitiveType('int'),
+		thisModule.createUMLPrimitiveType('long'),
+		thisModule.createUMLPrimitiveType('float'),
+		thisModule.createUMLPrimitiveType('double'),
+		thisModule.createUMLPrimitiveType('boolean'),
+		thisModule.createUMLPrimitiveType('char'),
+		thisModule.createUMLPrimitiveType('string'),
+		thisModule.createUMLPrimitiveType('void')
+		}
+;
+
+--Indica si el tipo Java sobre el que se invoca el metodo es una coleccion
+--Un tipo Java es una coleccion si es una de las interfaces dentro 
+--del Java Collection Framework, o es un tipo que implementa alguna de estas interfaces 
+helper context java!Type def: isCollectionType(): Boolean =
+	
+	(self.oclIsTypeOf(java!InterfaceDeclaration) and (self.name = 'Collection' or
+	self.name = 'Set' or self.name = 'List' or self.name = 'Queue')) 
+	or
+		if(self.oclIsTypeOf(java!TypeDeclaration))then
+			self.implementsCollectionInterface()
+		else
+			false
+		endif
+;
+
+--Indica si el tipo pasado ocmo parametro es un Map
+--Un tipo es un Map si es la interface Map o es una clase
+--que implementa esta interface
+helper context java!Type def: isMapType(): Boolean =
+	
+	self.oclIsTypeOf(java!InterfaceDeclaration) and self.name = 'Map'
+	or if(self.oclIsTypeOf(java!TypeDeclaration))then
+			self.implementsMapInterface()
+		else
+			false
+		endif
+;
+
+--Verifica si el tipo pasado como parametro implementa la interface Map
+helper context java!Type def: implementsMapInterface(): Boolean =
+	
+	if (not self.superInterfaces.oclIsUndefined()) then
+			self.superInterfaces -> exists (i | i.type.isMapType())
+	else
+		false
+	endif
+;
+
+--Verifica si el tipo pasado como parametro implementa alguna de las interfaces
+--del Java Collection Framework
+helper context java!Type def: implementsCollectionInterface(): Boolean =
+	
+	if (not self.superInterfaces.oclIsUndefined()) then
+			self.superInterfaces -> exists (i | i.type.isCollectionType())
+	else
+		false
+	endif
+;
+
+--Obtiene la multiplicidad para el tipo java pasado como parametro
+--Si el tipo es una coleccion, un mapa o un array la multiplicidad es un LiteralString con valor *,
+--En cualquier otro caso la multiplicidad es un LiteralUnlimitedNatural con valor 1
+helper def: getUMLMultiplicity(javatype:java!Type): UML!LiteralSpecification =
+	
+	let type: java!Type = if(javatype.isParameterizedType()) then
+	--si el tipo Java es la instanciación de un tipo genérico,
+	--la multiplicidad es la multiplicidad del tipo genérico (raw type)  
+								javatype.type.type
+						  else
+						  		javatype
+						  endif
+	in  if (type.isCollectionType() or type.isArrayType() or type.isMapType()) then
+			thisModule.createLiteralString('*')			
+		else
+			thisModule.createLiteralUnlimitedNatural(1)
+		endif
+;
+
+--Indica si el parametro sobre el que se invoca el metodo es un parametro de un metodo
+--dentro de una clase o interface
+helper context java!SingleVariableDeclaration def: isTypdeDeclarationMethodParameter():Boolean =
+	
+	if (not self.methodDeclaration.oclIsUndefined())then
+		self.methodDeclaration.abstractTypeDeclaration.oclIsKindOf(java!TypeDeclaration)
+	else
+		false
+	endif
+;
+
+--Obtiene el nombre de un java generic type de la siguiente forma
+-- type_name<param1_name, param2_name,...,paramn_name>
+helper def: getGenericTypeName(javatype:java!TypeDeclaration): String =
+	
+	javatype.name + '<' + javatype.typeParameters -> iterate(param; result:String = '' | 
+		if(param = javatype.typeParameters ->last()) then result.concat(param.name) else result.concat(param.name +',')endif)
+		+ '>'
+;
+
+--reglas
+
+rule javaModel2UMLModel {
+
+from javamodel: java!Model
+
+to
+
+umlmodel: UML!Model (
+
+	name <- javamodel.name,
+	packagedElement <- Sequence{javamodel.ownedElements -> select(elem | elem.proxy = false)}
+					   ->including(thisModule.createJavaPrimitivePackage())
+					   ->including(thisModule.createImportsPackage(javamodel))
+)
+
+}
+
+rule javaPackage2UMLPackage {
+
+from javapackage: java!Package 
+	
+to umlpackage: UML!Package (
+
+	name <- javapackage.name,
+	packagedElement <- javapackage.selectPackagedElements()
+)
+
+}
+
+rule javaInterface2UMLInterface {
+	from
+		javainterface: java!InterfaceDeclaration 
+		
+	to
+		umlinterface: UML!Interface (
+			name <- javainterface.name,
+			ownedAttribute <- thisModule.selectFieldDeclarations(javainterface.
+					bodyDeclarations),
+			ownedOperation <- thisModule.selectMethodDeclarations(javainterface.bodyDeclarations),
+			nestedClassifier <- thisModule.selectNestedClassifiers(javainterface.bodyDeclarations),
+			generalization <- javainterface.superInterfaces -> collect(jint | thisModule.createInterfaceGeneralization(jint.type))
+		)
+		
+		do {
+			
+		--si la interface se encuentra parametrizada, agrego TemplateSignature
+		if(javainterface.typeParameters ->notEmpty()){
+			umlinterface.ownedTemplateSignature <- thisModule.createUMLTemplateSignature(javainterface);
+			thisModule.templateTypes <- thisModule.templateTypes.including(javainterface, umlinterface);
+		  }
+		}
+		
+	}
+
+rule javaEnumeration2UMLEnumeration {
+
+	from javaenum: java!EnumDeclaration
+	
+	to
+		umlenum: UML!Enumeration (
+			name <- javaenum.name,
+			ownedLiteral <- javaenum.enumConstants -> collect(enumliteral | thisModule.createEnumLiteral(enumliteral))
+		)
+		
+	do {
+	    if(not javaenum.modifier.oclIsUndefined()) {
+			umlenum.visibility <- thisModule.getUMLVisibility(javaenum.modifier);
+		}
+	}
+}
+
+lazy rule createEnumLiteral {
+
+	from javaenumliteral: java!EnumConstantDeclaration
+	
+	to umlenumliteral: UML!EnumerationLiteral (
+		name <- javaenumliteral.name
+	)
+}
+
+rule javaClass2UMLClass {
+	
+	from
+		javaclass: java!ClassDeclaration 
+	to
+		umlclass: UML!Class (
+			name <- javaclass.name,
+			ownedAttribute <- thisModule.selectFieldDeclarations(javaclass.
+					bodyDeclarations),
+			ownedOperation <- thisModule.selectMethodDeclarations(javaclass.bodyDeclarations),
+			nestedClassifier <- thisModule.selectNestedClassifiers(javaclass.bodyDeclarations),
+			generalization <- if(javaclass.hasSuperClass())then
+								Sequence{thisModule.createClassGeneralization(javaclass.superClass.type)}
+							  else
+							  	Sequence{}
+							  endif,
+			interfaceRealization <- javaclass.superInterfaces -> collect(jsuperint | thisModule.createInterfaceRealization(jsuperint.type))
+ 		)
+			
+	do {
+			
+		if (not javaclass.modifier.oclIsUndefined()) {
+			umlclass.isAbstract <- javaclass.modifier.isAbstract();
+		}
+		
+		--si la clase java se encuentra parametrizada, agrego TemplateSignature
+		if(javaclass.typeParameters ->notEmpty()){
+			umlclass.ownedTemplateSignature <- thisModule.createUMLTemplateSignature(javaclass);
+			thisModule.templateTypes <- thisModule.templateTypes.including(javaclass, umlclass);
+		}
+		
+		--agrego referencias a umlclass en cada InterfaceRealization
+		for(realization in umlclass.interfaceRealization){
+			realization.implementingClassifier <- umlclass;
+			realization.client <- umlclass;
+		}
+	
+	}
+
+}
+
+lazy rule  createClassGeneralization {
+	
+	from
+		superclass: java!ClassDeclaration
+	to
+		new_generalization: UML!Generalization (
+			general <- superclass
+		)
+}
+
+rule createUMLTemplateSignature(javatype:java!TypeDeclaration){
+
+to umltemplatesignature: UML!RedefinableTemplateSignature(
+			
+			name <- thisModule.getGenericTypeName(javatype),
+			ownedParameter <- javatype.typeParameters -> collect(param | thisModule.javaTypeParameter2UMLTemplateParameter(param))
+		)
+do {
+	umltemplatesignature;
+  }
+}
+
+lazy rule javaTypeParameter2UMLTemplateParameter {
+
+	from javaparam: java!TypeParameter
+	
+	to umlparam: UML!ClassifierTemplateParameter (
+		
+		ownedParameteredElement <- javaparam,
+		parameteredElement <- javaparam
+	)
+}
+
+rule javaTypeParameter2ParameteredElement { 
+
+from javaparam: java!TypeParameter
+
+to umlparamelem: UML!Class(
+		
+		name <- javaparam.name
+	)
+}
+
+rule javaParameterizedInterface2UMLTemplateableElement {
+
+	from javaparaminterface:java!ParameterizedType (
+	
+		javaparaminterface.type.type.oclIsTypeOf(java!InterfaceDeclaration)
+	) 
+	
+	to umltemplateint: UML!Interface (
+	
+		name <- javaparaminterface.name,
+		templateBinding <- templatebinding
+	),
+	
+	templatebinding:UML!TemplateBinding (
+		
+		parameterSubstitution <- javaparaminterface.typeArguments -> iterate(arg; params:Sequence(UML!TemplateParameterSubstitution)=Sequence{} | 
+									let index:Integer=javaparaminterface.typeArguments->indexOf(arg) 
+									 in params -> including (thisModule.createTemplateParameterSubstitution(javaparaminterface,index)))
+	)
+	
+	do {
+		--obtengo el paquete en el que se encuentra la interfaz genérica y agrego la interfaz parametrizada en la misma ubicacion
+		thisModule.getTemplateTypeContainer(javaparaminterface.type.type).packagedElement <- thisModule.getTemplateTypeContainer(javaparaminterface.type.type).packagedElement -> including(umltemplateint);
+		
+		--agrego informacion al mapa de tipos parametrizados (se utiliza despues para asignar el tipo a identificadores)
+		thisModule.parameterizedTypes <- thisModule.parameterizedTypes.including(javaparaminterface, umltemplateint);
+		
+		--asigno al atributo signature del TemplateBinding, una referencia a la TemplateSignature de la interfaz genérica
+		if(thisModule.templateTypes.containsKey(javaparaminterface.type.type)){
+			templatebinding.signature <- thisModule.templateTypes.get(javaparaminterface.type.type).ownedTemplateSignature;
+		}
+		umltemplateint;
+	}
+}
+
+rule javaParameterizedClass2UMLTemplateableElement {
+
+	from javaparamclass: java!ParameterizedType(
+		
+		javaparamclass.type.type.oclIsTypeOf(java!ClassDeclaration)
+	)
+	
+	to umltemplateclass: UML!Class (
+	
+		name <- javaparamclass.name,
+		templateBinding <- templatebinding
+	),
+	
+	templatebinding:UML!TemplateBinding(
+		parameterSubstitution <- javaparamclass.typeArguments -> iterate(arg; params:Sequence(UML!TemplateParameterSubstitution)=Sequence{} | 
+									let index:Integer=javaparamclass.typeArguments->indexOf(arg) 
+										 in params -> including (thisModule.createTemplateParameterSubstitution(javaparamclass,index)))
+	)
+	
+	do {
+		--obtengo el paquete en el que se encuentra la clase genérica y agrego la clase parametrizada en la misma ubicacion
+		thisModule.getTemplateTypeContainer(javaparamclass.type.type).packagedElement <- thisModule.getTemplateTypeContainer(javaparamclass.type.type).packagedElement -> including(umltemplateclass);
+		
+		--agrego informacion al mapa de tipos parametrizados (se utiliza despues para asignar el tipo a identificadores)
+		thisModule.parameterizedTypes <- thisModule.parameterizedTypes.including(javaparamclass, umltemplateclass);
+		
+		--asigno al atributo signature del TemplateBinding, una referencia a la TemplateSignature de la clase genérica
+		if(thisModule.templateTypes.containsKey(javaparamclass.type.type)){
+			templatebinding.signature <- thisModule.templateTypes.get(javaparamclass.type.type).ownedTemplateSignature;
+		}
+		
+		umltemplateclass;
+	}
+}
+
+rule createTemplateParameterSubstitution(javaparam:java!ParameterizedType, position:Integer) {
+	
+to paramsubstitution:UML!TemplateParameterSubstitution (
+	
+	formal <- thisModule.templateTypes.get(javaparam.type.type).ownedTemplateSignature.ownedParameter->at(position),
+	actual <- javaparam.typeArguments->at(position).type
+ )
+ 
+do {
+	paramsubstitution;
+ }
+
+}
+
+rule javaAttribute2UMLProperty {
+
+	from javafield: java!VariableDeclarationFragment (
+		
+		 javafield.isClassField() 
+
+	)
+	
+	to
+	
+	umlprop: UML!Property(
+	
+		name <- javafield.name,
+		lowerValue <- lower_value,
+		type <- if(not javafield.variablesContainer.type.oclIsUndefined())then
+				   thisModule.getType(javafield.variablesContainer.type.type)
+				else
+					OclUndefined
+				endif
+	),
+	
+	lower_value: UML!LiteralInteger(
+		
+		value <- 0
+	)
+	
+	do {
+		
+		if(not javafield.variablesContainer.type.oclIsUndefined()){
+			umlprop.upperValue <- thisModule.getUMLMultiplicity(javafield.variablesContainer.type.type);
+	}
+		
+	    if(not javafield.variablesContainer.modifier.oclIsUndefined()) {
+			umlprop.visibility <- thisModule.getUMLVisibility(javafield.variablesContainer.modifier);
+			umlprop.isStatic <- javafield.variablesContainer.modifier.static;
+			umlprop.isLeaf <- javafield.variablesContainer.modifier.isFinal();
+		}
+	    
+	    --si la propiedad es una asociacion, creo la asociacion
+		--invocando la regla createUMLAssociation 
+	    if(javafield.isAssociation()) {
+			thisModule.getContainerPackage(umlprop).packagedElement <- 
+				thisModule.getContainerPackage(umlprop).packagedElement -> 
+					including(thisModule.createUMLAssociation(javafield, umlprop));
+	    }
+	 }
+	
+}
+
+rule createUMLAssociation(javafield:java!VariableDeclarationFragment, umlprop:UML!Property) {
+
+	to
+	
+	umlassociation: UML!Association (
+	
+		name <- thisModule.getAssociationName(umlprop.name,javafield.variablesContainer.abstractTypeDeclaration.name),
+		ownedEnd <- Sequence{opProp},
+		memberEnd <- Sequence{umlprop,opProp}
+	),
+	
+	opProp: UML!Property (
+	
+		name <- javafield.variablesContainer.abstractTypeDeclaration.name.toLower(),
+		type <-javafield.variablesContainer.abstractTypeDeclaration
+	)
+	
+	do {
+
+		umlassociation;
+			
+	 }
+}
+
+	
+rule javaConstructor2UMLOperation {
+	
+from
+	javamethod: java!ConstructorDeclaration (
+	
+		javamethod.abstractTypeDeclaration.oclIsKindOf(java!TypeDeclaration)
+	)
+		
+to
+	umloperation: UML!Operation (
+			
+		name <- javamethod.name,
+		ownedParameter <- Sequence {javamethod.parameters},
+		visibility <- #public
+	)
+
+}
+
+
+rule javaMethod2UMLOperation {
+	
+from
+	javamethod: java!MethodDeclaration(
+	
+		javamethod.abstractTypeDeclaration.oclIsKindOf(java!TypeDeclaration)
+	)
+	
+to
+	umloperation: UML!Operation (
+			
+		name <- javamethod.name,
+		ownedParameter <- Sequence {javamethod.parameters}
+		)
+	
+do {
+
+	if(not javamethod.returnType.oclIsUndefined()) {
+		umloperation.ownedParameter <- umloperation.ownedParameter -> including(thisModule.createUMLReturnParameter(javamethod.returnType.type));
+	}
+	
+	if (not javamethod.modifier.oclIsUndefined()) {
+		umloperation.isStatic <- javamethod.modifier.static;
+		umloperation.isAbstract <- javamethod.modifier.isAbstract();
+		umloperation.visibility <- thisModule.getUMLVisibility(javamethod.modifier);
+	}
+}
+
+}
+
+rule javaParameter2UMLParameter {
+	
+from javaparam: java!SingleVariableDeclaration (
+
+	javaparam.isTypdeDeclarationMethodParameter()
+)
+	
+to
+
+umlparam : UML!Parameter (
+
+	name <- javaparam.name,
+	type <- thisModule.getType(javaparam.type.type),
+	lowerValue <- lower_value,
+	upperValue <- thisModule.getUMLMultiplicity(javaparam.type.type)
+),
+
+lower_value: UML!LiteralInteger(
+		
+	value <- 0
+)
+
+}
+
+
+lazy rule createInterfaceGeneralization {
+
+from superint: java!InterfaceDeclaration
+
+to 
+	new_generalization: UML!Generalization (
+		
+		general <- superint
+	)
+	
+}
+
+
+lazy rule createInterfaceRealization {
+
+from superinterface: java!InterfaceDeclaration
+
+to
+	new_realization: UML!InterfaceRealization (
+		
+		contract <- superinterface,
+		supplier <- superinterface
+	)
+}
+
+rule createJavaPrimitivePackage(){
+
+to
+	javaprimitivepackage: UML!Package (
+			name <- 'Java Primitive Types',
+			packagedElement <- thisModule.createJavaPrimitiveTypes()
+			
+		)
+
+do {
+		javaprimitivepackage; 
+	}
+
+}
+
+rule createImportsPackage(javamodel: java!Model){
+
+to
+	importspackage: UML!Package (
+			name <- 'Imports',
+			packagedElement <- javamodel.ownedElements -> select(elem | elem.proxy = true) 
+			
+		)
+
+do {
+		importspackage; 
+	}
+
+}
+	
+
+rule createUMLPrimitiveType (typename: String) {
+
+to
+		umltype: UML!PrimitiveType (
+			name <- typename
+		)
+
+do {
+		umltype; 
+	}
+
+}
+
+rule createLiteralUnlimitedNatural(literalValue: Integer) {
+
+to
+	literal: UML!LiteralUnlimitedNatural (
+	
+		value <- literalValue.abs()
+	)
+	
+do {
+	
+	literal;
+}
+}
+
+rule createLiteralString(literalValue: String) {
+
+to
+	literal: UML!LiteralString (
+	
+		value <- literalValue
+	)
+	
+do {
+	
+	literal;
+}
+}
+
+rule createUMLReturnParameter (type: java!Type) {
+
+to
+		umlreturntype: UML!Parameter (
+			name <- type.name,
+			type <- thisModule.getType(type),
+			direction <- #return,
+			lowerValue <- lower_value,
+			upperValue <- thisModule.getUMLMultiplicity(type)
+		),
+		
+		lower_value: UML!LiteralInteger(
+		
+			value <- 0
+	)
+
+do {
+		umlreturntype; 
+	}
+
+}

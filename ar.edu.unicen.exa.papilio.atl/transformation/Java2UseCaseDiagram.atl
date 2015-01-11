@@ -1,0 +1,161 @@
+-- @path java=/ar.edu.unicen.exa.hefesto.atl/metamodel/java.ecore
+-- @path UML=/ar.edu.unicen.exa.hefesto.atl/metamodel/UML.ecore
+
+
+module Java2UseCaseDiagram;
+create OUT: UML from IN: java;
+
+uses Java2ClassDiagramHelpers;
+
+
+----------------------------------------------------------------------------------------------
+--creo una variable global para el paquete use cases
+helper def: usecasespackage: UML!Package =
+	OclUndefined;
+
+--creo una variable global para el paquete other
+helper def: otherpackage: UML!Package =
+	OclUndefined;
+
+helper context java!AbstractMethodDeclaration def: isPublic(): Boolean =
+	if (self.modifier.oclIsUndefined()) then
+		false
+	else
+		self.modifier.visibility = #public
+	endif;
+
+--funcion que realiza un DFS sobre el cuerpo de un método retornando todos los elementos
+--de tipo MethodInvocation contenidos dentro del mismo
+helper def: getContainedMethodInvocations(rootElement: java!ASTNode): Sequence(java!MethodInvocation) =
+	
+	rootElement.eContents() -> iterate (elem; result:Sequence(java!MethodInvocation)=Sequence{} | 
+								if (elem.oclIsTypeOf(java!MethodInvocation)) then
+									result -> including(elem)
+								else
+									result -> union (thisModule.getContainedMethodInvocations(elem))
+								endif
+							) 
+;
+
+rule javaModel2UMLUseCaseModel {
+	
+	from
+		javamodel: java!Model
+	to
+		usecasemodel: UML!Model (
+			name <- javamodel.name + 'UseCaseModel',
+			packagedElement <- Sequence{thisModule.createUMLPackage('use cases'),
+						thisModule.createUMLPackage('other')}
+		)
+	do {
+		  thisModule.usecasespackage <- usecasemodel.packagedElement -> at(1);
+		  thisModule.otherpackage <- usecasemodel.packagedElement -> at(2);
+		}
+}
+
+
+rule javaMethodDeclaration2UMLUseCase {
+	from
+		javamethod: java!MethodDeclaration (
+			javamethod.proxy = false and javamethod.isPublic()
+			
+		)
+	to
+		usecase: UML!UseCase (
+			name <- javamethod.abstractTypeDeclaration.name + ':' + javamethod.name,
+			subject <- javamethod.abstractTypeDeclaration,
+			generalization <- if(not javamethod.redefinedMethodDeclaration.oclIsUndefined())then
+								Sequence{thisModule.createMethodGeneralization(javamethod.redefinedMethodDeclaration)}
+							  else
+							  	Sequence{}
+							  endif,
+							  
+			include <- thisModule.getContainedMethodInvocations(javamethod.body) -> select(invocation | invocation.method.proxy = false and invocation.method.isPublic())
+				-> collect (invocation | thisModule.createInclude(javamethod, invocation))
+		)
+	do {
+		 thisModule.usecasespackage.packagedElement <- thisModule.usecasespackage.
+				packagedElement -> including(usecase);
+		 
+		}
+		
+}
+
+rule createInclude (invokingMethod:java!MethodDeclaration, methodInvocation:java!MethodInvocation) {
+	
+	to umlInclude : UML!Include (
+		addition <- methodInvocation.method	
+	)
+	do {
+		umlInclude;
+	}
+	
+}
+
+lazy rule createMethodGeneralization {
+	
+	from superMethod : java!MethodDeclaration
+	
+	to methodGeneralization : UML!Generalization (
+		general <- superMethod
+	)
+}
+
+rule javaClass2UMLClass {
+	from
+		javaclass: java!ClassDeclaration
+	to
+		umlclass: UML!Class (
+			name <- javaclass.name
+	)
+		
+	do {
+			thisModule.otherpackage.packagedElement <- thisModule.otherpackage.
+					packagedElement -> including(umlclass); 
+		}
+}
+
+rule javaInterface2UMLInterface {
+	from
+		javainterface: java!InterfaceDeclaration
+	to
+		umlinterface: UML!Interface (
+			name <- javainterface.name
+		)
+	
+	do {
+			thisModule.otherpackage.packagedElement <- thisModule.otherpackage.
+					packagedElement -> including(umlinterface); 
+		}
+		
+}
+
+rule javaEnum2UMLEnum {
+	from
+		javaenum: java!EnumDeclaration
+	to
+		umlenum: UML!Enumeration (
+			name <- javaenum.name
+		)
+	
+	do {
+		 	thisModule.otherpackage.packagedElement <- thisModule.otherpackage.
+					packagedElement -> including(umlenum); 
+		}
+		
+}
+
+
+			
+rule createUMLPackage(packagename: String) {
+
+to
+		umlpackage: UML!Package (
+			name <- packagename
+		)
+
+do {
+		umlpackage; 
+	}
+
+}

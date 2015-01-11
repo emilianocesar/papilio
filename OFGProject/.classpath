@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="javamodel"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.jobs_3.5.100.v20110404.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.resources_3.7.100.v20110510-0712.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.runtime_3.7.0.v20110110.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.emf.common_2.7.0.v20110912-0920.jar" sourcepath="C:/Users/ROLANDIS/Documents/Bel/Eclipse/Eclipse Indigo EMF/plugins/org.eclipse.emf.common.source_2.7.0.v20120127-1122.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore_2.7.0.v20110912-0920.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.emf.ecore.xmi_2.7.0.v20110520-1406.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.common_3.6.0.v20110523.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jdt.core_3.7.1.v_B76_R37x.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.modisco.infra.discovery.core_0.9.1.v201109150824.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.modisco.java.composition_0.9.1.v201109150824.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.modisco.java.composition.discoverer_0.9.1.v201109150824.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.modisco.kdm.source.extension_0.9.1.v201109150824.jar"/>
+	<classpathentry kind="lib" path="lib/easymock-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/cglib-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/objenesis-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/org.objectweb.asm_3.3.1.v201105211655.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.emf.edit_2.7.2.v20120130-0943.jar" sourcepath="C:/Users/ROLANDIS/Documents/Bel/Eclipse/Eclipse Indigo EMF/plugins/org.eclipse.emf.edit.source_2.7.2.v20120130-0943.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.eclipse.gmt.modisco.java.edit"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/org.eclipse.gmt.modisco.java"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ar.edu.unicen.exa.papilio.core"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parameters:parameterContainer xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:parameters="http://parameters/1.0">
+  <parameters name="methodName" value="samples.elib.Library.addLoan"/>
+</parameters:parameterContainer>

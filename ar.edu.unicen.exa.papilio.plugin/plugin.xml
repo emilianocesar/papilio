@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?eclipse version="3.0"?>
+
+<plugin>
+<extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command commandId="ar.edu.unicen.exa.hefesto.plugin.command.reverse" label="Reverse to UML Diagrams" style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="activeMenuSelection">
+                  <iterate ifEmpty="false" operator="or">
+                     <adapt type="org.eclipse.jdt.core.IJavaProject">
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   <extension point="org.eclipse.ui.commands">
+      <command defaultHandler="ar.edu.unicen.exa.papilio.plugin.handler.ReverseToUMLHandler" id="ar.edu.unicen.exa.hefesto.plugin.command.reverse" name="Reverse">
+      </command>
+   </extension>
+</plugin>

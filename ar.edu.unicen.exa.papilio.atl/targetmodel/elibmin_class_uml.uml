@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<uml:Model xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uml="http://www.eclipse.org/uml2/3.0.0/UML" name="Elibmin">
+  <packagedElement xsi:type="uml:Package" name="samples">
+    <packagedElement xsi:type="uml:Package" name="elib">
+      <packagedElement xsi:type="uml:Class" name="Document">
+        <ownedAttribute name="title" visibility="public" type="//@packagedElement.1/@packagedElement.8">
+          <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedAttribute name="loan" visibility="public" type="//@packagedElement.0/@packagedElement.0/@packagedElement.2" association="//@packagedElement.0/@packagedElement.0/@packagedElement.4">
+          <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedOperation name="Document" visibility="public">
+          <ownedParameter name="tit" type="//@packagedElement.1/@packagedElement.8">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="isAvailable" visibility="public">
+          <ownedParameter name="boolean" type="//@packagedElement.1/@packagedElement.6" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="authorizedLoan" visibility="public">
+          <ownedParameter name="user" type="//@packagedElement.0/@packagedElement.0/@packagedElement.3">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="boolean" type="//@packagedElement.1/@packagedElement.6" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="addLoan" visibility="public">
+          <ownedParameter name="ln" type="//@packagedElement.0/@packagedElement.0/@packagedElement.2">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="void" type="//@packagedElement.1/@packagedElement.9" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Class" name="Library">
+        <ownedAttribute name="MAX_NUMBER_OF_LOANS" visibility="public" isLeaf="true" type="//@packagedElement.1/@packagedElement.2">
+          <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedAttribute name="loans" visibility="public" type="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0">
+          <upperValue xsi:type="uml:LiteralString" value="*"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedOperation name="Library" visibility="public"/>
+        <ownedOperation name="borrowDocument" visibility="public">
+          <ownedParameter name="user" type="//@packagedElement.0/@packagedElement.0/@packagedElement.3">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="doc" type="//@packagedElement.0/@packagedElement.0/@packagedElement.0">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="boolean" type="//@packagedElement.1/@packagedElement.6" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="addLoan" visibility="private">
+          <ownedParameter name="loan" type="//@packagedElement.0/@packagedElement.0/@packagedElement.2">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="void" type="//@packagedElement.1/@packagedElement.9" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="main" visibility="public" isStatic="true">
+          <ownedParameter name="userName" type="//@packagedElement.1/@packagedElement.8">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="docName" type="//@packagedElement.1/@packagedElement.8">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="void" type="//@packagedElement.1/@packagedElement.9" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Class" name="Loan">
+        <ownedAttribute name="user" visibility="public" type="//@packagedElement.0/@packagedElement.0/@packagedElement.3" association="//@packagedElement.0/@packagedElement.0/@packagedElement.5">
+          <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedAttribute name="document" visibility="public" type="//@packagedElement.0/@packagedElement.0/@packagedElement.0" association="//@packagedElement.0/@packagedElement.0/@packagedElement.6">
+          <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedOperation name="Loan" visibility="public">
+          <ownedParameter name="usr" type="//@packagedElement.0/@packagedElement.0/@packagedElement.3">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="doc" type="//@packagedElement.0/@packagedElement.0/@packagedElement.0">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="getUser" visibility="public">
+          <ownedParameter name="User" type="//@packagedElement.0/@packagedElement.0/@packagedElement.3" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="getDocument" visibility="public">
+          <ownedParameter name="Document" type="//@packagedElement.0/@packagedElement.0/@packagedElement.0" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Class" name="User">
+        <ownedAttribute name="fullName" visibility="public" type="//@packagedElement.1/@packagedElement.8">
+          <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedAttribute name="loans" visibility="public" type="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0">
+          <upperValue xsi:type="uml:LiteralString" value="*"/>
+          <lowerValue xsi:type="uml:LiteralInteger"/>
+        </ownedAttribute>
+        <ownedOperation name="User" visibility="public">
+          <ownedParameter name="name" type="//@packagedElement.1/@packagedElement.8">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="numberOfLoans" visibility="public">
+          <ownedParameter name="int" type="//@packagedElement.1/@packagedElement.2" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+        <ownedOperation name="addLoan" visibility="public">
+          <ownedParameter name="loan" type="//@packagedElement.0/@packagedElement.0/@packagedElement.2">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+          <ownedParameter name="void" type="//@packagedElement.1/@packagedElement.9" direction="return">
+            <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+            <lowerValue xsi:type="uml:LiteralInteger"/>
+          </ownedParameter>
+        </ownedOperation>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Association" name="A_loan_document" memberEnd="//@packagedElement.0/@packagedElement.0/@packagedElement.0/@ownedAttribute.1 //@packagedElement.0/@packagedElement.0/@packagedElement.4/@ownedEnd.0">
+        <ownedEnd name="document" type="//@packagedElement.0/@packagedElement.0/@packagedElement.0" association="//@packagedElement.0/@packagedElement.0/@packagedElement.4"/>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Association" name="A_user_loan" memberEnd="//@packagedElement.0/@packagedElement.0/@packagedElement.2/@ownedAttribute.0 //@packagedElement.0/@packagedElement.0/@packagedElement.5/@ownedEnd.0">
+        <ownedEnd name="loan" type="//@packagedElement.0/@packagedElement.0/@packagedElement.2" association="//@packagedElement.0/@packagedElement.0/@packagedElement.5"/>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Association" name="A_document_loan" memberEnd="//@packagedElement.0/@packagedElement.0/@packagedElement.2/@ownedAttribute.1 //@packagedElement.0/@packagedElement.0/@packagedElement.6/@ownedEnd.0">
+        <ownedEnd name="loan" type="//@packagedElement.0/@packagedElement.0/@packagedElement.2" association="//@packagedElement.0/@packagedElement.0/@packagedElement.6"/>
+      </packagedElement>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xsi:type="uml:Package" name="Java Primitive Types">
+    <packagedElement xsi:type="uml:PrimitiveType" name="byte"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="short"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="int"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="long"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="float"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="double"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="boolean"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="char"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="string"/>
+    <packagedElement xsi:type="uml:PrimitiveType" name="void"/>
+  </packagedElement>
+  <packagedElement xsi:type="uml:Package" name="Imports">
+    <packagedElement xsi:type="uml:Package" name="java">
+      <packagedElement xsi:type="uml:Package" name="lang">
+        <packagedElement xsi:type="uml:Class" name="String" clientDependency="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.0/@interfaceRealization.0 //@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.0/@interfaceRealization.1 //@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.0/@interfaceRealization.2">
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.1/@packagedElement.0" client="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.0" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.1/@packagedElement.0"/>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.1" client="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.0" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.1"/>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.2" client="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.0" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.2"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Interface" name="Comparable">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="Comparable&lt;T>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.1/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="T" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.1/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Interface" name="CharSequence"/>
+        <packagedElement xsi:type="uml:Interface" name="Iterable">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="Iterable&lt;T>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.3/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="T" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.3/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Interface" name="Cloneable"/>
+        <packagedElement xsi:type="uml:Class" name="Object"/>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Package" name="io">
+        <packagedElement xsi:type="uml:Interface" name="Serializable"/>
+      </packagedElement>
+      <packagedElement xsi:type="uml:Package" name="util">
+        <packagedElement xsi:type="uml:Interface" name="Collection">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="Collection&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <generalization general="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.3"/>
+          <ownedOperation name="add">
+            <ownedParameter name="arg0" type="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.5">
+              <upperValue xsi:type="uml:LiteralUnlimitedNatural" value="1"/>
+              <lowerValue xsi:type="uml:LiteralInteger"/>
+            </ownedParameter>
+          </ownedOperation>
+          <ownedOperation name="size"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Class" name="LinkedList" clientDependency="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1/@interfaceRealization.0 //@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1/@interfaceRealization.1 //@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1/@interfaceRealization.2 //@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1/@interfaceRealization.3">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="LinkedList&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <generalization general="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.2"/>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.5" client="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.5"/>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.6" client="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.6"/>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.4" client="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.0/@packagedElement.4"/>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.1/@packagedElement.0" client="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.1" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.1/@packagedElement.0"/>
+          <ownedOperation name="LinkedList" visibility="public"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Class" name="AbstractSequentialList">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="AbstractSequentialList&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.2/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.2/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <generalization general="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.3"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Class" name="AbstractList" clientDependency="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.3/@interfaceRealization.0">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="AbstractList&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.3/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.3/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <generalization general="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.4"/>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.5" client="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.3" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.5"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Class" name="AbstractCollection" clientDependency="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.4/@interfaceRealization.0">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="AbstractCollection&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.4/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.4/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <interfaceRealization supplier="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0" client="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.4" contract="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Interface" name="List">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="List&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.5/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.5/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <generalization general="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Interface" name="Deque">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="Deque&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.6/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.6/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <generalization general="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.7"/>
+        </packagedElement>
+        <packagedElement xsi:type="uml:Interface" name="Queue">
+          <ownedTemplateSignature xsi:type="uml:RedefinableTemplateSignature" name="Queue&lt;E>">
+            <ownedParameter xsi:type="uml:ClassifierTemplateParameter" parameteredElement="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.7/@ownedTemplateSignature/@ownedParameter.0/@ownedParameteredElement">
+              <ownedParameteredElement xsi:type="uml:Class" name="E" templateParameter="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.7/@ownedTemplateSignature/@ownedParameter.0"/>
+            </ownedParameter>
+          </ownedTemplateSignature>
+          <generalization general="//@packagedElement.2/@packagedElement.0/@packagedElement.2/@packagedElement.0"/>
+        </packagedElement>
+      </packagedElement>
+    </packagedElement>
+  </packagedElement>
+</uml:Model>
