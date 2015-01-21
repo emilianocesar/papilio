@@ -10,7 +10,7 @@ import ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages.ShowOFGWizardPage;
 import ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages.ShowPropagationAlgorithmGenSetWizardPage;
 import ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages.ShowPropagationAlgorithmOutSetWizardPage;
 
-public class HefestoWizard extends Wizard {
+public class PapilioWizard extends Wizard {
 
 	protected ShowModelWizardPage pageOne;
 	private IJavaProject project;
@@ -20,7 +20,7 @@ public class HefestoWizard extends Wizard {
 	private ShowPropagationAlgorithmOutSetWizardPage pageFive;
 	private ShowFinalModelWizardPage pageSix;
 
-	public HefestoWizard(IJavaProject project) {
+	public PapilioWizard(IJavaProject project) {
 		super();
 		this.project = project;
 	}

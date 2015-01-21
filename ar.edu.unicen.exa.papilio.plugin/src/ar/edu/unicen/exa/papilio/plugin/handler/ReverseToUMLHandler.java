@@ -10,7 +10,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import ar.edu.unicen.exa.papilio.plugin.ui.wizard.HefestoWizard;
+import ar.edu.unicen.exa.papilio.plugin.ui.wizard.PapilioWizard;
 
 public class ReverseToUMLHandler extends AbstractHandler {
 
@@ -23,7 +23,7 @@ public class ReverseToUMLHandler extends AbstractHandler {
 		Object firstElement = selection.getFirstElement();
 //		JavaModelDisco]verer discoverer = new JavaModelDiscoverer();
 //		Model model = discoverer.discoverModelFromProject((IJavaProject) firstElement, new NullProgressMonitor());
-		WizardDialog dialog = new WizardDialog(shell, new HefestoWizard((IJavaProject) firstElement));
+		WizardDialog dialog = new WizardDialog(shell, new PapilioWizard((IJavaProject) firstElement));
 		dialog.open(); 
 		return null;
 	}
