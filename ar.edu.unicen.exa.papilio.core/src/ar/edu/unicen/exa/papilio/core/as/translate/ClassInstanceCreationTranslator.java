@@ -9,7 +9,6 @@ import org.eclipse.gmt.modisco.java.ClassInstanceCreation;
 import org.eclipse.gmt.modisco.java.ConstructorDeclaration;
 import org.eclipse.gmt.modisco.java.Expression;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
 import ar.edu.unicen.exa.papilio.core.as.element.ASConstructorDeclaration;
 import ar.edu.unicen.exa.papilio.core.as.element.ASConstructorInvocationStatement;
 import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
@@ -37,12 +36,14 @@ public class ClassInstanceCreationTranslator extends AbstractTranslator {
 	@Override
 	public List<ASElement> translate(ASTNode node) {
 		ClassInstanceCreation constructorInvocation = (ClassInstanceCreation) node;
-				
-		if (constructorInvocation.getMethod().getAbstractTypeDeclaration() == null || constructorInvocation.getMethod().getAbstractTypeDeclaration().isProxy()) {
-		// si el constructor corresponde a una clase proxy no realizo traduccion 
-			ASProgram.INSTANCE
-					.getErrors()
-					.add(new ASTranslatorException(
+
+		if (constructorInvocation.getMethod().getAbstractTypeDeclaration() == null
+				|| constructorInvocation.getMethod()
+						.getAbstractTypeDeclaration().isProxy()) {
+			// si el constructor corresponde a una clase proxy no realizo
+			// traduccion
+			this.context
+					.addError(new ASTranslatorException(
 							"Proxy constructor invocation "
 									+ constructorInvocation.getMethod()
 											.getName()
@@ -51,17 +52,17 @@ public class ClassInstanceCreationTranslator extends AbstractTranslator {
 							ASTranslatorExceptionLevel.INFO));
 			return Collections.emptyList();
 		}
-		
+
 		List<ASElement> resultElements = new ArrayList<ASElement>();
 		ASConstructorInvocationStatement asConstructorInvocationStatement = new ASConstructorInvocationStatement();
 		asConstructorInvocationStatement.setNode(constructorInvocation);
 
 		ConstructorDeclaration constructorDeclaration = (ConstructorDeclaration) constructorInvocation
 				.getMethod();
-		ASConstructorDeclaration asConstructorDeclaration = (ASConstructorDeclaration) ASProgram.INSTANCE
+		ASConstructorDeclaration asConstructorDeclaration = (ASConstructorDeclaration) this.context
 				.getDeclaration(constructorDeclaration);
 		if (asConstructorDeclaration == null) {
-			asConstructorDeclaration = (ASConstructorDeclaration) ASProgram.INSTANCE
+			asConstructorDeclaration = (ASConstructorDeclaration) this.context
 					.addUndeclaredConstructor(constructorDeclaration);
 		}
 		asConstructorInvocationStatement
@@ -73,13 +74,14 @@ public class ClassInstanceCreationTranslator extends AbstractTranslator {
 					.getTranslatorForNode(argument);
 			List<ASElement> result = argumentTranslator.translate(argument);
 			if (result.isEmpty()) {
-				//agrego un elemento vacio para conservar el lugar	
-				asConstructorInvocationStatement.getArguments().add(new ASEmptyElement());
-				ASProgram.INSTANCE.getErrors().add(
-						new ASTranslatorException("Argument not translatable "
+				// agrego un elemento vacio para conservar el lugar
+				asConstructorInvocationStatement.getArguments().add(
+						new ASEmptyElement());
+				this.context.addError(new ASTranslatorException(
+						"Argument not translatable "
 								+ argument.getClass().getSimpleName()
 								+ ". The element was ignored", argument,
-								ASTranslatorExceptionLevel.INFO));
+						ASTranslatorExceptionLevel.INFO));
 			} else {
 				ASNamedElement asArgument = (ASNamedElement) result.get(0);
 				asConstructorInvocationStatement.getArguments().add(asArgument);

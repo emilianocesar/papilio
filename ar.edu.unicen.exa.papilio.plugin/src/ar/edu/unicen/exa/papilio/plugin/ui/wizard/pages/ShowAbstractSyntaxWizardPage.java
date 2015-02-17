@@ -1,7 +1,5 @@
 package ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages;
 
-import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -108,17 +106,15 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 
 					}
 				});
-		
-		asExceptionTreeView
-		.addDoubleClickListener(new IDoubleClickListener() {
+
+		asExceptionTreeView.addDoubleClickListener(new IDoubleClickListener() {
 
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				ISelection selection = event.getSelection();
 				if (selection instanceof IStructuredSelection) {
 					IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-					Object firstElement = structuredSelection
-							.getFirstElement();
+					Object firstElement = structuredSelection.getFirstElement();
 					if (!(firstElement instanceof ASTranslatorException))
 						return;
 
@@ -154,8 +150,7 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 
 							@Override
 							public void onASProgramGenerated(
-									final ASProgram program,
-									final List<ASTranslatorException> errors) {
+									final ASProgram program) {
 								Display.getDefault().asyncExec(new Runnable() {
 
 									@Override
@@ -163,7 +158,8 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 
 										abstractSyntaxTreeView
 												.setInput(program);
-										asExceptionTreeView.setInput(errors);
+										asExceptionTreeView.setInput(program
+												.getErrors());
 									}
 								});
 							}

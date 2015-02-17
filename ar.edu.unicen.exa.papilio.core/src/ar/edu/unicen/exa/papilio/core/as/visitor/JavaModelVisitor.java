@@ -24,7 +24,6 @@ import org.eclipse.gmt.modisco.java.SingleVariableDeclaration;
 import org.eclipse.gmt.modisco.java.VariableDeclarationExpression;
 import org.eclipse.gmt.modisco.java.VariableDeclarationStatement;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
 import ar.edu.unicen.exa.papilio.core.as.Context;
 import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
 import ar.edu.unicen.exa.papilio.core.as.element.ASMethodDeclaration;
@@ -34,10 +33,13 @@ import ar.edu.unicen.exa.papilio.core.as.translate.TranslatorFactory;
 
 public class JavaModelVisitor {
 
-	private Context context = new Context();
+	private Context context;
 
 	private List<ASTranslatorException> errors = new ArrayList<ASTranslatorException>();
 
+	public JavaModelVisitor(Context context) {
+		this.context = context;
+	}
 	public Context getContext() {
 		return context;
 	}
@@ -50,12 +52,11 @@ public class JavaModelVisitor {
 
 		List<ASElement> result = null;
 		AbstractSyntaxTranslator translator;
-		translator = TranslatorFactory.INSTANCE.getTranslator(node);
-
+		translator = TranslatorFactory.INSTANCE.getTranslator(node, context);
 		translator.setContext(context);
 		result = translator.translate(node);
 		for (ASElement asElement : result) {
-			ASProgram.INSTANCE.addElement(asElement);
+			context.addElement(asElement);
 		}
 	}
 
@@ -261,7 +262,7 @@ public class JavaModelVisitor {
 	public void afterVisit(MethodDeclaration node) {
 		
 		//obtengo el ASElement generado para la declaracion de metodo
-		ASMethodDeclaration declaration = (ASMethodDeclaration)ASProgram.INSTANCE.getDeclaration(node);
+		ASMethodDeclaration declaration = (ASMethodDeclaration)context.getDeclaration(node);
 		if (declaration != null && declaration.returnsObject()) {
 			//agrego return elements
 			declaration.getReturnObjects().addAll(context.getReturnElements());

@@ -7,7 +7,6 @@ import org.eclipse.gmt.modisco.java.ASTNode;
 import org.eclipse.gmt.modisco.java.SingleVariableAccess;
 import org.eclipse.gmt.modisco.java.VariableDeclaration;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
 import ar.edu.unicen.exa.papilio.core.as.element.ASAttributeDeclaration;
 import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
 import ar.edu.unicen.exa.papilio.core.as.element.ASVariableAccess;
@@ -25,10 +24,10 @@ public class SingleVariableAccessTranslator extends AbstractTranslator {
 		variableAccess.setNode(variableReference);
 		VariableDeclaration variableDeclaration = variableReference.getVariable();
 		
-		ASAttributeDeclaration attributeDeclaration = (ASAttributeDeclaration) ASProgram.INSTANCE.getDeclaration(variableDeclaration);
+		ASAttributeDeclaration attributeDeclaration = (ASAttributeDeclaration) this.context.getDeclaration(variableDeclaration);
 		
 		if (attributeDeclaration == null) {
-			attributeDeclaration = (ASAttributeDeclaration) ASProgram.INSTANCE.addUndeclaredVariable(variableDeclaration);
+			attributeDeclaration = (ASAttributeDeclaration) this.context.addUndeclaredVariable(variableDeclaration);
 		}
 		variableAccess.setVariableDeclaration(attributeDeclaration);
 		resultElements.add(variableAccess);

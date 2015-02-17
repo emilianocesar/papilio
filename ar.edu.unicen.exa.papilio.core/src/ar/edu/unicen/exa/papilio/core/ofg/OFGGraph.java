@@ -13,17 +13,11 @@ import ar.edu.unicen.exa.papilio.core.as.exception.OFGGenerationException;
 import ar.edu.unicen.exa.papilio.core.ofg.element.OFGEdge;
 import ar.edu.unicen.exa.papilio.core.ofg.element.OFGNode;
 
-public enum OFGGraph {
-	
-	INSTANCE;
+public class OFGGraph {
 	
 	private Map<String,OFGNode> ofg = new LinkedHashMap<String,OFGNode>();
 	private List<OFGGenerationException> errors = new ArrayList<OFGGenerationException>();
 
-
-	public static OFGGraph getInstance() {
-		return INSTANCE;
-	}
 
 	public Set<OFGNode> getNodes() {
 		return new LinkedHashSet<OFGNode>(ofg.values());

@@ -1,7 +1,6 @@
 package ar.edu.unicen.exa.papilio.core.as;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +16,8 @@ import ar.edu.unicen.exa.papilio.core.as.element.ASMethodDeclarationProxy;
 import ar.edu.unicen.exa.papilio.core.as.element.ASStatement;
 import ar.edu.unicen.exa.papilio.core.as.exception.ASTranslatorException;
 
-public enum ASProgram {
-	
-	INSTANCE;
-	
+public class ASProgram {
+		
 	private Map<ASTNode, ASDeclaration> declarations = new LinkedHashMap<ASTNode, ASDeclaration>();
 
 	private Map<ASTNode, ASDeclarationProxy> undeclaredElement = new LinkedHashMap<ASTNode, ASDeclarationProxy>();
@@ -90,24 +87,6 @@ public enum ASProgram {
 		}
 	}
 	
-	public void removeAllDeclarations() {
-		if (!declarations.isEmpty()) {
-			declarations = new HashMap<ASTNode, ASDeclaration>();
-		}
-	}
-	
-	public void removeAllUndeclared() {
-		if (!undeclaredElement.isEmpty()) {
-			undeclaredElement = new HashMap<ASTNode, ASDeclarationProxy>();
-		}
-	}
-	
-	public void removeAllStatements() {
-		if (!statements.isEmpty()) {
-			statements = new ArrayList<ASStatement>();
-		}
-	}
-	
 	public List<ASTranslatorException> getErrors() {
 		return this.errors;
 	}
@@ -123,10 +102,4 @@ public enum ASProgram {
 		return null;
 	}
 
-	public void clear() {
-		this.declarations = new LinkedHashMap<ASTNode, ASDeclaration>();
-		this.undeclaredElement = new LinkedHashMap<ASTNode, ASDeclarationProxy>();
-		this.statements = new ArrayList<ASStatement>();	
-		this.errors = new ArrayList<ASTranslatorException>();
-	}
 }

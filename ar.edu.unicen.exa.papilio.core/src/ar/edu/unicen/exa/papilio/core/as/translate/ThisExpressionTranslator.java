@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.eclipse.gmt.modisco.java.ASTNode;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
 import ar.edu.unicen.exa.papilio.core.as.element.ASAttributeDeclaration;
 import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
 
@@ -18,14 +17,14 @@ public class ThisExpressionTranslator extends AbstractTranslator {
 		String thisExpressionName = this.getThisExpressionName();
 		
 		//Verifico si existe el atributo para el objeto this
-		ASAttributeDeclaration thisInstance = (ASAttributeDeclaration)ASProgram.INSTANCE.getDeclaration(thisExpressionName.toString());
+		ASAttributeDeclaration thisInstance = (ASAttributeDeclaration)this.context.getDeclaration(thisExpressionName.toString());
 		if (thisInstance == null) {
 			thisInstance = new ASAttributeDeclaration();
 			thisInstance.setFullyScopedName(this.getThisExpressionName());
 			thisInstance.setThisTarget(true);
 			thisInstance.setNode(context.getCurrentClassDeclaration());
 			//agrego el elemento al ASProgram
-			ASProgram.INSTANCE.addElement(thisInstance);
+			this.context.addElement(thisInstance);
 		}
 		result.add(thisInstance);
 		return result;

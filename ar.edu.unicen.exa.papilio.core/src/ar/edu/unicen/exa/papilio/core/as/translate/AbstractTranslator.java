@@ -21,7 +21,6 @@ import org.eclipse.gmt.modisco.java.TypeAccess;
 import org.eclipse.gmt.modisco.java.VariableDeclaration;
 import org.eclipse.gmt.modisco.java.VariableDeclarationFragment;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
 import ar.edu.unicen.exa.papilio.core.as.CollectionTypes;
 import ar.edu.unicen.exa.papilio.core.as.Context;
 import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
@@ -68,7 +67,7 @@ public abstract class AbstractTranslator implements AbstractSyntaxTranslator {
 
 	public AbstractSyntaxTranslator getTranslatorForNode(ASTNode node) {
 		AbstractSyntaxTranslator translator = TranslatorFactory.INSTANCE
-				.getTranslator(node);
+				.getTranslator(node, this.context);
 		translator.setContext(this.context);
 		return translator;
 	}
@@ -135,7 +134,7 @@ public abstract class AbstractTranslator implements AbstractSyntaxTranslator {
 			} else if (variable instanceof EnumConstantDeclaration) {
 					type = (EnumDeclaration) variable.eContainer();
 			} else {
-				ASProgram.INSTANCE.getErrors().add(new ASTranslatorException(
+				this.context.addError(new ASTranslatorException(
 						"Could not translate expression type", variable,
 						ASTranslatorExceptionLevel.ERROR));
 			}
