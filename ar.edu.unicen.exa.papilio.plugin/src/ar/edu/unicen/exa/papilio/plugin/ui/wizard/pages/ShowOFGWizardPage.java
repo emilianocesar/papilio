@@ -33,11 +33,13 @@ public class ShowOFGWizardPage extends WizardPage {
 	private TreeViewer ofgTreeViewer;
 	private TreeViewer outNodesTreeViewer;
 	private TreeViewer inNodesTreeViewer;
+	private PapilioMain papilioMain;
 
-	public ShowOFGWizardPage(String string) {
+	public ShowOFGWizardPage(String string, PapilioMain papilioMain) {
 		super(string);
 		setTitle("OFG Graph");
 		setPageComplete(false);
+		this.papilioMain = papilioMain;
 	}
 
 	@Override
@@ -138,7 +140,7 @@ public class ShowOFGWizardPage extends WizardPage {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				PapilioMain.INSTANCE.generateOFG(monitor, new PapilioMain.GenerateOFGGraphListener() {
+				ShowOFGWizardPage.this.papilioMain.generateOFG(monitor, new PapilioMain.GenerateOFGGraphListener() {
 					
 					@Override
 					public void onOFGGenerated(final OFGGraph ofg) {

@@ -13,7 +13,6 @@ import org.eclipse.gmt.modisco.java.FieldAccess;
 import org.eclipse.gmt.modisco.java.ReturnStatement;
 import org.eclipse.gmt.modisco.java.SingleVariableAccess;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
 import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
 import ar.edu.unicen.exa.papilio.core.as.element.ASNamedElement;
 import ar.edu.unicen.exa.papilio.core.as.exception.ASTranslatorException;
@@ -25,7 +24,6 @@ import ar.edu.unicen.exa.papilio.core.as.exception.ASTranslatorException.ASTrans
  */
 public class ReturnStatementTranslator extends AbstractTranslator {
 
-	
 	@Override
 	public List<ASElement> translate(ASTNode node) {
 	
@@ -48,7 +46,7 @@ public class ReturnStatementTranslator extends AbstractTranslator {
 			ASTranslatorException exception = new ASTranslatorException(
 					"Unable to translate return expression. The expression is not a variable reference ",
 					returnExpression, ASTranslatorExceptionLevel.INFO);
-			ASProgram.INSTANCE.getErrors().add(exception);
+			this.context.addError(exception);
 		}
 
 		//retorno una lista vacia dado que el translator no agrega ningun elemento al asProgram

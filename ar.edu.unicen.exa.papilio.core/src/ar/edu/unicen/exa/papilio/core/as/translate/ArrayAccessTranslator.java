@@ -17,7 +17,6 @@ import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
  */
 public class ArrayAccessTranslator extends AbstractTranslator {
 
-	
 	@Override
 	public List<ASElement> translate(ASTNode node) {
 	

@@ -12,7 +12,6 @@ import org.eclipse.gmt.modisco.java.MethodInvocation;
 import org.eclipse.gmt.modisco.java.SingleVariableAccess;
 import org.eclipse.gmt.modisco.java.ThisExpression;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
 import ar.edu.unicen.exa.papilio.core.as.element.ASAssignmentStatement;
 import ar.edu.unicen.exa.papilio.core.as.element.ASAttributeDeclaration;
 import ar.edu.unicen.exa.papilio.core.as.element.ASElement;
@@ -69,10 +68,10 @@ public class MethodInvocationTranslator extends AbstractTranslator {
 
 			ASMethodInvocationStatement asInvocation = new ASMethodInvocationStatement();
 			asInvocation.setNode(node);
-			ASMethodDeclaration methodDeclaration = (ASMethodDeclaration) ASProgram.INSTANCE
+			ASMethodDeclaration methodDeclaration = (ASMethodDeclaration) this.context
 					.getDeclaration(invocationNode.getMethod());
 			if (methodDeclaration == null) {
-				methodDeclaration = (ASMethodDeclaration) ASProgram.INSTANCE
+				methodDeclaration = (ASMethodDeclaration) this.context
 						.addUndeclaredMethod(invocationNode.getMethod());
 			}
 			asInvocation.setDeclaration(methodDeclaration);
@@ -88,18 +87,15 @@ public class MethodInvocationTranslator extends AbstractTranslator {
 				if (result.isEmpty()) {
 					// agrego un elemento vacio para conservar el lugar
 					asInvocation.getArguments().add(new ASEmptyElement());
-					ASProgram.INSTANCE.getErrors().add(
-							new ASTranslatorException(
-									"Argument not translatable "
-											+ argument.getClass()
-													.getSimpleName()
-											+ ". The element was ignored",
-									argument, ASTranslatorExceptionLevel.INFO));
+					this.context.addError(new ASTranslatorException(
+							"Argument not translatable "
+									+ argument.getClass().getSimpleName()
+									+ ". The element was ignored", argument,
+							ASTranslatorExceptionLevel.INFO));
 				} else {
-						ASNamedElement asArgument = (ASNamedElement) result
-								.get(0);
-						asInvocation.getArguments().add(asArgument);
-					}
+					ASNamedElement asArgument = (ASNamedElement) result.get(0);
+					asInvocation.getArguments().add(asArgument);
+				}
 			}
 
 			resultElements.add(asInvocation);
@@ -164,7 +160,7 @@ public class MethodInvocationTranslator extends AbstractTranslator {
 		String thisExpressionName = this.getThisExpressionName();
 
 		// Verifico si existe el atributo para el objeto this
-		ASAttributeDeclaration thisInstanceDeclaration = (ASAttributeDeclaration) ASProgram.INSTANCE
+		ASAttributeDeclaration thisInstanceDeclaration = (ASAttributeDeclaration) this.context
 				.getDeclaration(thisExpressionName.toString());
 
 		if (thisInstanceDeclaration == null) {
@@ -175,7 +171,7 @@ public class MethodInvocationTranslator extends AbstractTranslator {
 			// le seteo como nodo la clase actual
 			thisInstanceDeclaration.setNode(context
 					.getCurrentClassDeclaration());
-			ASProgram.INSTANCE.addElement(thisInstanceDeclaration);
+			this.context.addElement(thisInstanceDeclaration);
 		}
 
 		thisInstance.setVariableDeclaration(thisInstanceDeclaration);
@@ -214,15 +210,16 @@ public class MethodInvocationTranslator extends AbstractTranslator {
 
 		AbstractSyntaxTranslator argumentTranslator = this
 				.getTranslatorForNode(argument);
-		
+
 		ASTNode enclosedNode = argumentTranslator.getEnclosedNode(argument);
 		if (enclosedNode instanceof SingleVariableAccess
 				|| enclosedNode instanceof ClassInstanceCreation
 				|| enclosedNode instanceof MethodInvocation) {
-		//Traduzco los casos en que el nodo insertado es un SingleVariableAccess, 
-		//ClassInstanceCreation o MethodInvocation
-		//o bien es un nodo que contiene un elemento de ste tipo
-			
+			// Traduzco los casos en que el nodo insertado es un
+			// SingleVariableAccess,
+			// ClassInstanceCreation o MethodInvocation
+			// o bien es un nodo que contiene un elemento de ste tipo
+
 			ASElement insertedElementReference = argumentTranslator.translate(
 					argument).get(0);
 
@@ -233,11 +230,11 @@ public class MethodInvocationTranslator extends AbstractTranslator {
 			return assignment;
 
 		} else {
-			ASProgram.INSTANCE.getErrors().add(
-					new ASTranslatorException(
-							"Insertion method argument not translatable "
-									+ argument.getClass().getSimpleName() + ". The insertion statement was ignored",
-							argument, ASTranslatorExceptionLevel.INFO));
+			this.context.addError(new ASTranslatorException(
+					"Insertion method argument not translatable "
+							+ argument.getClass().getSimpleName()
+							+ ". The insertion statement was ignored",
+					argument, ASTranslatorExceptionLevel.INFO));
 			return null;
 		}
 	}
@@ -270,7 +267,7 @@ public class MethodInvocationTranslator extends AbstractTranslator {
 					"Unable to translate target collection expression. Cannot find a translator for expression ["
 							+ targetExpression + "]");
 			exception.setNode(node);
-			ASProgram.INSTANCE.getErrors().add(exception);
+			this.context.addError(exception);
 		}
 		return asTargetVariable;
 	}

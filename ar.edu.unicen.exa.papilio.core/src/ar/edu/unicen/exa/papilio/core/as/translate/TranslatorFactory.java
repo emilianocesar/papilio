@@ -36,7 +36,7 @@ import org.eclipse.gmt.modisco.java.emf.impl.CharacterLiteralImpl;
 import org.eclipse.gmt.modisco.java.emf.impl.NumberLiteralImpl;
 import org.eclipse.gmt.modisco.java.emf.impl.StringLiteralImpl;
 
-import ar.edu.unicen.exa.papilio.core.as.ASProgram;
+import ar.edu.unicen.exa.papilio.core.as.Context;
 import ar.edu.unicen.exa.papilio.core.as.exception.ASNoTranslatorFoundException;
 import ar.edu.unicen.exa.papilio.core.as.exception.ASTranslatorException.ASTranslatorExceptionLevel;
 
@@ -73,7 +73,7 @@ public enum TranslatorFactory {
 	 * @return El traductor para el tipo de nodo indicado 
 	 *  Excepcion indicando que no es posible hallar un traductor para el nodo
 	 */
-	public AbstractSyntaxTranslator getTranslator(ASTNode eObject) {
+	public AbstractSyntaxTranslator getTranslator(ASTNode eObject, Context context) {
 		AbstractSyntaxTranslator translator = null;
 		if (eObject instanceof ClassInstanceCreation) {
 			translator = classInstanceCreationTranslator;
@@ -133,7 +133,7 @@ public enum TranslatorFactory {
 			translator = nullTranslator;
 		} else {
 			String exceptionMsg = "Unable to translate element " + eObject.getClass().getSimpleName() + ": cannot find a translator for it";
-			ASProgram.INSTANCE.getErrors().add(new ASNoTranslatorFoundException(exceptionMsg, eObject, ASTranslatorExceptionLevel.ERROR));
+			context.addError(new ASNoTranslatorFoundException(exceptionMsg, eObject, ASTranslatorExceptionLevel.ERROR));
 			translator = nullTranslator;
 		}
 		return translator;

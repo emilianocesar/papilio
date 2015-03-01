@@ -1,7 +1,5 @@
 package ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages;
 
-import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -34,15 +32,16 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 	private TreeViewer abstractSyntaxTreeView;
 	private TreeViewer asExceptionTreeView;
 	private ComposedAdapterFactory adapterFactory;
+	private PapilioMain papilioMain;
 
-	public ShowAbstractSyntaxWizardPage(String string) {
+	public ShowAbstractSyntaxWizardPage(String string, PapilioMain papilioMain) {
 		super(string);
 		setTitle("Abstract Syntax Tree");
 		setDescription("Derived from selected model");
 		setPageComplete(false);
 		adapterFactory = new ComposedAdapterFactory(
 				ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
-
+		this.papilioMain = papilioMain;
 	}
 
 	@Override
@@ -108,17 +107,15 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 
 					}
 				});
-		
-		asExceptionTreeView
-		.addDoubleClickListener(new IDoubleClickListener() {
+
+		asExceptionTreeView.addDoubleClickListener(new IDoubleClickListener() {
 
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
 				ISelection selection = event.getSelection();
 				if (selection instanceof IStructuredSelection) {
 					IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-					Object firstElement = structuredSelection
-							.getFirstElement();
+					Object firstElement = structuredSelection.getFirstElement();
 					if (!(firstElement instanceof ASTranslatorException))
 						return;
 
@@ -149,25 +146,28 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				PapilioMain.INSTANCE.generateASProgram(monitor,
-						new PapilioMain.GenerateASProgramListener() {
-
-							@Override
-							public void onASProgramGenerated(
-									final ASProgram program,
-									final List<ASTranslatorException> errors) {
-								Display.getDefault().asyncExec(new Runnable() {
+				ShowAbstractSyntaxWizardPage.this.papilioMain
+						.generateASProgram(monitor,
+								new PapilioMain.GenerateASProgramListener() {
 
 									@Override
-									public void run() {
+									public void onASProgramGenerated(
+											final ASProgram program) {
+										Display.getDefault().asyncExec(
+												new Runnable() {
 
-										abstractSyntaxTreeView
-												.setInput(program);
-										asExceptionTreeView.setInput(errors);
+													@Override
+													public void run() {
+
+														abstractSyntaxTreeView
+																.setInput(program);
+														asExceptionTreeView
+																.setInput(program
+																		.getErrors());
+													}
+												});
 									}
 								});
-							}
-						});
 				return Status.OK_STATUS;
 			}
 

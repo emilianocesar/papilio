@@ -39,14 +39,16 @@ public class ShowPropagationAlgorithmOutSetWizardPage extends WizardPage {
 	private TreeViewer outSetOFGTreeView;
 	private TreeViewer outSetASTTreeView;
 	private ComposedAdapterFactory adapterFactory;
+	private PapilioMain papilioMain;
 
-	public ShowPropagationAlgorithmOutSetWizardPage(String string) {
+	public ShowPropagationAlgorithmOutSetWizardPage(String string,
+			PapilioMain papilioMain) {
 		super(string);
 		setTitle(string + "Out Set");
 		setPageComplete(false);
 		adapterFactory = new ComposedAdapterFactory(
 				ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
-
+		this.papilioMain = papilioMain;
 	}
 
 	@Override
@@ -143,23 +145,26 @@ public class ShowPropagationAlgorithmOutSetWizardPage extends WizardPage {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				PapilioMain.INSTANCE.generateOutSet(monitor,
-						new FlowPropagationAlgorithmStepListener() {
-
-							@Override
-							public <T extends ASTNode> void onStepPerformed(
-									final Map<OFGNode, Set<T>> out) {
-								Display.getDefault().asyncExec(new Runnable() {
+				ShowPropagationAlgorithmOutSetWizardPage.this.papilioMain
+						.generateOutSet(monitor,
+								new FlowPropagationAlgorithmStepListener() {
 
 									@Override
-									public void run() {
+									public <T extends ASTNode> void onStepPerformed(
+											final Map<OFGNode, Set<T>> out) {
+										Display.getDefault().asyncExec(
+												new Runnable() {
 
-										outSetOFGTreeView.setInput(out);
+													@Override
+													public void run() {
+
+														outSetOFGTreeView
+																.setInput(out);
+													}
+												});
 									}
-								});
-							}
 
-						});
+								});
 				return Status.OK_STATUS;
 			}
 

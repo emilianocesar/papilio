@@ -36,8 +36,10 @@ public class ShowModelWizardPage extends WizardPage {
 	private IJavaProject project;
 	private TreeViewer modelTreeViewer;
 	private ComposedAdapterFactory adapterFactory;
+	private PapilioMain papilioMain;
 
-	public ShowModelWizardPage(String string, IJavaProject project) {
+	public ShowModelWizardPage(String string, IJavaProject project,
+			PapilioMain papilioMain) {
 		super(string);
 		setTitle("Java Model");
 		setDescription("Java Model derived from Project \""
@@ -46,6 +48,7 @@ public class ShowModelWizardPage extends WizardPage {
 		adapterFactory = new ComposedAdapterFactory(
 				ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
 		setPageComplete(false);
+		this.papilioMain = papilioMain;
 	}
 
 	@Override
@@ -75,56 +78,64 @@ public class ShowModelWizardPage extends WizardPage {
 		btnClassDiagram.setText("Class Diagram");
 		btnClassDiagram.setEnabled(false);
 		btnClassDiagram.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				getContainer().showPage(getNextPage());
-				PapilioMain.INSTANCE.setDiagram(PapilioDiagram.CLASS);
+				ShowModelWizardPage.this.papilioMain
+						.setDiagram(PapilioDiagram.CLASS);
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				getContainer().showPage(getNextPage());
-				PapilioMain.INSTANCE.setDiagram(PapilioDiagram.CLASS);
+				ShowModelWizardPage.this.papilioMain
+						.setDiagram(PapilioDiagram.CLASS);
 			}
 		});
 
-		final Button btnSequenceDiagram = new Button(grpChooseYourDiagram, SWT.NONE);
+		final Button btnSequenceDiagram = new Button(grpChooseYourDiagram,
+				SWT.NONE);
 		btnSequenceDiagram.setText("Sequence Diagram");
 		btnSequenceDiagram.setEnabled(false);
 		btnSequenceDiagram.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				getContainer().showPage(getNextPage());
-				PapilioMain.INSTANCE.setDiagram(PapilioDiagram.SEQUENCE);
+				ShowModelWizardPage.this.papilioMain
+						.setDiagram(PapilioDiagram.SEQUENCE);
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				getContainer().showPage(getNextPage());
-				PapilioMain.INSTANCE.setDiagram(PapilioDiagram.SEQUENCE);
+				ShowModelWizardPage.this.papilioMain
+						.setDiagram(PapilioDiagram.SEQUENCE);
 			}
 		});
 
-		final Button btnUseCaseDiagram = new Button(grpChooseYourDiagram, SWT.NONE);
+		final Button btnUseCaseDiagram = new Button(grpChooseYourDiagram,
+				SWT.NONE);
 		btnUseCaseDiagram.setText("Use Case Diagram");
 		btnUseCaseDiagram.setEnabled(false);
 		btnUseCaseDiagram.addSelectionListener(new SelectionListener() {
-			
+
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				getContainer().showPage(getNextPage());
-				PapilioMain.INSTANCE.setDiagram(PapilioDiagram.USECASES);
+				ShowModelWizardPage.this.papilioMain
+						.setDiagram(PapilioDiagram.USECASES);
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				getContainer().showPage(getNextPage());
-				PapilioMain.INSTANCE.setDiagram(PapilioDiagram.USECASES);
+				ShowModelWizardPage.this.papilioMain
+						.setDiagram(PapilioDiagram.USECASES);
 			}
 		});
-		
+
 		modelTreeViewer
 				.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -135,7 +146,8 @@ public class ShowModelWizardPage extends WizardPage {
 							IStructuredSelection structuredSelection = (IStructuredSelection) selection;
 							Object firstElement = structuredSelection
 									.getFirstElement();
-							if (firstElement instanceof Package || firstElement instanceof Model) {
+							if (firstElement instanceof Package
+									|| firstElement instanceof Model) {
 								btnClassDiagram.setEnabled(true);
 								btnSequenceDiagram.setEnabled(false);
 								btnUseCaseDiagram.setEnabled(false);
@@ -146,7 +158,7 @@ public class ShowModelWizardPage extends WizardPage {
 							} else {
 								btnClassDiagram.setEnabled(false);
 								btnSequenceDiagram.setEnabled(false);
-								btnUseCaseDiagram.setEnabled(false);								
+								btnUseCaseDiagram.setEnabled(false);
 							}
 						}
 					}
@@ -156,26 +168,30 @@ public class ShowModelWizardPage extends WizardPage {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				PapilioMain.INSTANCE.discoverJavaModelFromProject(project,
-						monitor, new PapilioMain.DiscoverModelListener() {
-
-							@Override
-							public void onModelDiscovered(final Model model) {
-								Display.getDefault().asyncExec(new Runnable() {
+				ShowModelWizardPage.this.papilioMain
+						.discoverJavaModelFromProject(project, monitor,
+								new PapilioMain.DiscoverModelListener() {
 
 									@Override
-									public void run() {
-										modelTreeViewer.setInput(model);
+									public void onModelDiscovered(
+											final Model model) {
+										Display.getDefault().asyncExec(
+												new Runnable() {
+
+													@Override
+													public void run() {
+														modelTreeViewer
+																.setInput(model);
+													}
+												});
+									}
+
+									@Override
+									public void onModelDiscoverError(
+											DiscoveryException exception) {
+
 									}
 								});
-							}
-
-							@Override
-							public void onModelDiscoverError(
-									DiscoveryException exception) {
-
-							}
-						});
 				return Status.OK_STATUS;
 			}
 
