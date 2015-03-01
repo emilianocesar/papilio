@@ -1,7 +1,9 @@
 package ar.edu.unicen.exa.papilio.plugin.ui.provider.as;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -30,7 +32,15 @@ public class AbstractSyntaxContentProvider implements ITreeContentProvider {
 			elements.addAll(program.getDeclarations().values());
 			elements.addAll(program.getStatements());
 			elements.addAll(program.getUndeclaredElement().values());
-			return elements.toArray();
+			Object[] result = elements.toArray();
+			Arrays.sort(result, new Comparator<Object>() {
+
+				@Override
+				public int compare(Object o1, Object o2) {
+					return o1.toString().compareTo(o2.toString());
+				}
+			});
+			return result;
 		}
 		return Collections.EMPTY_LIST.toArray();
 	}
