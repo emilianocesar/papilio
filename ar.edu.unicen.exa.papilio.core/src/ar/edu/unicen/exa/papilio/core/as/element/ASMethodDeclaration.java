@@ -67,9 +67,9 @@ public class ASMethodDeclaration extends ASDeclaration {
 	@Override
 	public Map<String, OFGNode> getOFGNodes() {
 		
-		if (this.isPrimitive()) {
-			return Collections.emptyMap();
-		}
+//		if (this.isPrimitive()) {
+//			return Collections.emptyMap();
+//		}
 
 		Map<String, OFGNode> result = new HashMap<String, OFGNode>();
 		

@@ -69,7 +69,7 @@ helper def: isInputMethod(method: java!MethodDeclaration): Boolean =
 helper def: getInteraction(): UML!Interaction =
 	UML!Interaction.allInstances() -> first();
 
---Obtiene el identificador de para un objeto dentro de un lifeline
+--Obtiene el identificador para un objeto dentro de un lifeline
 --este identificador esta dado por nombre_objeto : nombre_clase
 helper def: getObjectId(object: java!InstanceSpecification): String =
 	object.name + ' : ' + object.instanceClass.name;
@@ -136,7 +136,7 @@ helper context java!Statement def: getBodyStatements(): Sequence(java!Statement)
 --Verifica si la secuencia de statements pasada como parametro
 --contiene alguna invocacion
 helper def: containsInvocationStatement(statements: Sequence(java!Statement)): Boolean =
-	statements -> exists(s | thisModule.containsInvocation(s));
+	statements -> exists(s | thisModule.containsMethodInvocation(s));
 
 helper def: containsInvocation(s: java!Statement): Boolean =
 	if (s.oclIsTypeOf(java!AbstractVariablesContainer) or s.
@@ -168,6 +168,21 @@ helper context java!AbstractVariablesContainer def: containsInvocation(): Boolea
 	self.fragments -> exists(f | f.initializer.oclIsKindOf(java!AbstractMethodInvocation)
 			and not f.isProxy());
 
+
+-- Devuelve true si el nodo pasado como parametro posee una invocacion de metodo
+-- entre sus hijos, false en caso contrario
+helper def: containsMethodInvocation(node: java!ASTNode): Boolean =
+	if (node.oclIsKindOf(java!AbstractMethodInvocation)) then
+			not node.method.proxy
+	else
+		if(node.eContents().oclIsUndefined()) then
+			false
+		else
+			not node.eContents() -> select(child |thisModule.containsMethodInvocation(child)) -> isEmpty()
+		endif
+	endif
+;
+
 helper context java!ExpressionStatement def: containsInvocation(): Boolean =
 	if (self.expression.oclIsKindOf(java!AbstractMethodInvocation)) then
 		not self.expression.method.proxy
@@ -189,6 +204,22 @@ helper context java!AbstractVariablesContainer def: extractInvocation():
 	self.fragments -> select(f | f.initializer.oclIsKindOf(java!AbstractMethodInvocation)
 			and not f.initializer.method.proxy) -> first().initializer;
 
+-- Extrae todas las invocaciones de metodo contenidas dentro del subarbol que tiene
+-- como raiz al nodo pasado como parametro  
+helper def: extractInvocations(node: java!ASTNode):
+		Sequence(java!AbstractMethodInvocation) =
+			if(node.oclIsKindOf(java!AbstractMethodInvocation)) then
+				Sequence{node}
+			else
+				if(node.eContents().oclIsUndefined()) then
+					Sequence{}
+				else
+				node.eContents() -> iterate (child; invocations: java!AbstractMethodInvocation = Sequence{} |
+					invocations -> union (thisModule.extractInvocations(child)))
+				endif
+			endif
+ ;
+				
 helper context java!ExpressionStatement def: extractInvocation():
 		java!AbstractMethodInvocation =
 			
@@ -271,22 +302,27 @@ helper def: getMessageSort(invocation: java!AbstractMethodInvocation): UML!Messa
 	endif;
 
 --verifico el tipo de la sentencia if a traducir
+--0 la sentencia if posee invocaciones en su condicion
 --1 solo el bloque if posee invocaciones
 --2 tanto el bloque if como else poseen al menos una invocacion
 --3 solo el bloque else posee invocaciones
 --4 ninguno de los bloques posee invocaciones
 helper def: getIfStatementType(ifStatement: java!IfStatement): Integer =
-	if (thisModule.containsInvocationStatement(ifStatement.getIfStatements())) then
-		if (thisModule.containsInvocationStatement(ifStatement.getElseStatements())) then
-			2
-		else
-			1
-		endif
+	if (thisModule.containsMethodInvocation(ifStatement.expression)) then
+		0
 	else
-		if (thisModule.containsInvocationStatement(ifStatement.getElseStatements())) then
-			3
+		if (thisModule.containsInvocationStatement(ifStatement.getIfStatements())) then
+			if (thisModule.containsInvocationStatement(ifStatement.getElseStatements())) then
+				2
+			else	
+				1
+			endif
 		else
-			4
+			if (thisModule.containsInvocationStatement(ifStatement.getElseStatements())) then
+				3
+			else
+				4
+			endif
 		endif
 	endif;
 
@@ -349,7 +385,6 @@ rule javaInputMethodDeclaration2UMLInteraction {
 			name <- javamethod.name
 		)
 	do {
-		
 		thisModule.model.packagedElement <- thisModule.model.packagedElement ->
 				including(umlinteraction);
 		thisModule.addExecutionEventToModel(sourceMethodActivation.start.event);
@@ -372,67 +407,93 @@ rule translateStatements(container: UML!InteractionFragment, interaction:
 		Sequence(java!Statements), callerStack: Sequence(java!AbstractMethodDeclaration))
 		{
 
-	do {
-		for (statement in statements) {
-					
-			if (statement.oclIsTypeOf(java!ExpressionStatement) or statement.
-					oclIsKindOf(java!AbstractVariablesContainer)) {
-				if (statement.containsInvocation()) {
-					
-					thisModule.translateMethodInvocation(container, statement.
-							extractInvocation(), interaction, sourceLifeline, thisModule.
-							getTargetLifeline(interaction, statement.
-							extractInvocation()), callerStack);
-				}
+		do {
+			for (statement in statements) {
+--				
+--				if (statement.oclIsTypeOf(java!ExpressionStatement) or statement.
+--					oclIsKindOf(java!AbstractVariablesContainer)) {
+--					if (statement.containsInvocation()) {
+--						thisModule.translateMethodInvocation(container, statement.
+--							extractInvocation(), interaction, sourceLifeline, thisModule.
+--							getTargetLifeline(interaction, statement.
+--							extractInvocation()), callerStack);
+--					}
 				
-			} else if (statement.oclIsTypeOf(java!IfStatement)) {
-				--TODO implementar caso 0
-				-- verifico si la condicion posee invocaciones (0)
-				-- verifico si el bloque if contiene invocaciones (1)
-				-- verifico si el bloque else contiene invocaciones (2)
-				-- if (0) -> traduzco invocaciones, descarto sentencia de control
-				-- if (1) and (2) -> if-else
-				-- if (1) and not (2) -> if
-				-- if not (1) and (2) -> seria not if
-				-- if not (1) and not (2) -> no traduzco
-					thisModule.translateConditionalStatement(container, thisModule.
-							getIfStatementType(statement), statement, interaction,
-							sourceLifeline, callerStack);
-				
-			} else if(statement.isLoopStatement()) {
-			  
-				if(thisModule.containsInvocationStatement(statement.getBodyStatements()))
-						{
-			  	
-			  			thisModule.translateLoopStatement(container, statement,
-					interaction, sourceLifeline, callerStack);
-			  	}
-			}
+				if (statement.oclIsTypeOf(java!IfStatement)) {
+					-- verifico si la condicion posee invocaciones (0)
+					-- verifico si el bloque if contiene invocaciones (1)
+					-- verifico si el bloque else contiene invocaciones (2)
+					-- if (0) -> traduzco invocaciones, descarto sentencia de control
+					-- if (1) and (2) -> if-else
+					-- if (1) and not (2) -> if
+					-- if not (1) and (2) -> seria not if
+					-- if not (1) and not (2) -> no traduzco
+						thisModule.translateConditionalStatement(container, thisModule.
+								getIfStatementType(statement), statement, interaction,
+								sourceLifeline, callerStack);
+				} 
+				else if(statement.isLoopStatement()) {
+						--si la condicion posee invocaciones de metodo, traduzco las innvocaciones
+						--ignorando la sentencia de control
+						if(thisModule.containsMethodInvocation(statement.expression)) {
+							--traduzco invocaciones en la condicion
+							for (invocation in thisModule.extractInvocations(statement.expression)) {
+								thisModule.translateMethodInvocation(container,invocation,interaction,sourceLifeline, thisModule.
+									getTargetLifeline(interaction, invocation), callerStack);
+								}
+							--traduzco statements en el cuerpo del loop
+							thisModule.translateStatements(container, interaction, sourceLifeline, statement.getBodyStatements(), callerStack);
+						}
+						else if(thisModule.containsInvocationStatement(statement.getBodyStatements())){
+					  			thisModule.translateLoopStatement(container, statement,
+								interaction, sourceLifeline, callerStack);
+							}
+				  	} else {
+				  			if(thisModule.containsMethodInvocation(statement)) {
+				  				for(invocation in thisModule.extractInvocations(statement)){
+									thisModule.translateMethodInvocation(container,invocation,interaction,sourceLifeline, thisModule.
+										getTargetLifeline(interaction, invocation), callerStack);
+								}
+				  			}
+				  		}
+			 }
 		}
-	}
 }
-
+		
 rule translateConditionalStatement(container: UML!InteractionFragment, type: Integer,
 		ifStatement: java!Statement,
 		interaction: UML!interaction, sourceLifeline: UML!Lifeline, callerStack:
 				Sequence(java!AbstractMethodDeclaration)) {
 
 	do {
-		
-		if (type = thisModule.IF) {
-			        --la sentencia a traducir es un if simple (opt)
-			thisModule.translateIfStatement(container, ifStatement, interaction,
-					sourceLifeline, callerStack);
-		} else if (type = thisModule.IF_ELSE) {
-			              --la sentencia a traducir es un if-else (alt)
-				thisModule.translateIfElseStatement(container, ifStatement, interaction,
-						sourceLifeline, callerStack);
-			} else if (type = thisModule.NOT_IF) {
-				        --la sentencia a traducir es not if (else) (opt)
-					thisModule.translateElseStatement(container, ifStatement,
-							interaction, sourceLifeline, callerStack);
+		-- si el IF posee invocaciones en su condicion, traduzco las invocaciones
+		-- ignorando la sentencia de control
+		if (type = 0) {
+			for (invocation in thisModule.extractInvocations(ifStatement.expression)) {
+				thisModule.translateMethodInvocation(container, invocation, interaction, 
+					sourceLifeline, thisModule.getTargetLifeline(interaction, invocation), callerStack);
+			 	}
+			--traduzco el bloque then
+			thisModule.translateStatements(container, interaction, sourceLifeline, ifStatement.getIfStatements(), callerStack);
+			if(not ifStatement.getElseStatements().oclIsUndefined()) {
+			-- si existe, traduzco el bloque else
+				thisModule.translateStatements(container, interaction, sourceLifeline, ifStatement.getElseStatements(), callerStack);
 			}
-	 }
+			
+		} else if (type = thisModule.IF) {
+			        --la sentencia a traducir es un if simple (opt)
+					thisModule.translateIfStatement(container, ifStatement, interaction,
+					sourceLifeline, callerStack);
+				} else if (type = thisModule.IF_ELSE) {
+			              --la sentencia a traducir es un if-else (alt)
+						thisModule.translateIfElseStatement(container, ifStatement, interaction,
+						sourceLifeline, callerStack);
+					} else if (type = thisModule.NOT_IF) {
+				        --la sentencia a traducir es not if (else) (opt)
+							thisModule.translateElseStatement(container, ifStatement,
+							interaction, sourceLifeline, callerStack);
+							}
+	 	}
 }
 
 rule translateMethodInvocation(container: UML!InteractionFragment, invocation:
@@ -449,13 +510,13 @@ rule translateMethodInvocation(container: UML!InteractionFragment, invocation:
 	
 	do {
 		
-		 --creo el mensaje para la invocacion
-		thisModule.createMessage(container, invocation, interaction, sourceLifeline,
-				targetLifeline); 
-
 		container.fragment <- container.fragment -> including(targetMethodActivation);
 		container.fragment <- container.fragment -> including(targetMethodActivation.
 				start);
+		
+		--creo el mensaje para la invocacion
+		thisModule.createMessage(container, invocation, interaction, sourceLifeline,
+				targetLifeline);
 		
 		--si el metodo no es un llamado recursivo, traduzco la declaracion de metodo
 		if (not invocation.isRecursiveCall(callerStack)) {
@@ -492,7 +553,6 @@ rule createMessage(container: UML!InteractionFragment, invocation:
 			name <- 'MessageRecv' + thisModule.messageOccurrenceSpecificationIndex + '_'
 					+ invocation.method.name,
 			event <- new_recvOperationEvent,
-			enclosingInteraction <- interaction,
 			covered <- Sequence{targetLifeline},
 			message <- new_message
 		),
@@ -502,21 +562,21 @@ rule createMessage(container: UML!InteractionFragment, invocation:
 		new_recvOperationEvent: UML!ReceiveOperationEvent (
 			name <- 'RecvOperationEvent' + thisModule.operationEventIndex
 		)
-
 		
 		do {
-			
-			container.fragment <- container.fragment -> including(new_sendEvent);
-			container.fragment <- container.fragment -> including(new_receiveEvent);
-						
 			 --agrego message events al modelo
-		thisModule.model.packagedElement <- thisModule.model.packagedElement ->
+			 thisModule.model.packagedElement <- thisModule.model.packagedElement ->
 				union(Sequence{new_sendOperationEvent,
 						new_recvOperationEvent});
+			 
+			 --agrego message occurrence specifiation al container
+			 container.fragment <- container.fragment -> including(new_sendEvent);
+			 container.fragment <- container.fragment -> including(new_receiveEvent);
 			
-			thisModule.messageOccurrenceSpecificationIndex <- thisModule.
+			 thisModule.messageOccurrenceSpecificationIndex <- thisModule.
 					messageOccurrenceSpecificationIndex + 1;
-			thisModule.operationEventIndex <- thisModule.operationEventIndex + 1;
+			 
+			 thisModule.operationEventIndex <- thisModule.operationEventIndex + 1;
 			new_message;
 		}
 }
@@ -558,15 +618,8 @@ rule createActionExecutionSpecification(lifeline: UML!Lifeline, methodName: Stri
 		start_execution_occurrence.execution <- action_execution;
 		finish_execution_occurrence.execution <- action_execution;
 		
-		  --agrego los fragmentos a la lista fragment del container
---		container.fragment <- container.fragment ->
-		-- including(start_execution_occurrence);
---		container.fragment <- container.fragment -> including(action_execution);
---		container.fragment <- container.fragment ->
---				including(finish_execution_occurrence);
-		
 		 --agrego events al modelo
-		thisModule.addExecutionEventToModel(start_execution_event);
+		 thisModule.addExecutionEventToModel(start_execution_event);
 		 thisModule.addExecutionEventToModel(finish_execution_event);
 		
 		  --incremento indices para actionExecution y executionOccurrence
