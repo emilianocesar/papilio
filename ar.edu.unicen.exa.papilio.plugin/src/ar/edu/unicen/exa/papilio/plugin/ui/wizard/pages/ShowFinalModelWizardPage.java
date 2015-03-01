@@ -1,25 +1,14 @@
 package ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages;
 
-import java.io.IOException;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
 import org.eclipse.emf.edit.ui.provider.AdapterFactoryContentProvider;
 import org.eclipse.emf.edit.ui.provider.AdapterFactoryLabelProvider;
 import org.eclipse.gmt.modisco.java.Model;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.layout.TreeColumnLayout;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
@@ -29,10 +18,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.modisco.kdm.source.extension.ui.utils.BrowseCodeUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
@@ -48,8 +34,8 @@ public class ShowFinalModelWizardPage extends WizardPage {
 
 	private Model originalModel;
 	private Model workingModel;
-	
-	
+	private PapilioMain papilioMain;
+
 	public Model getOriginalModel() {
 		return originalModel;
 	}
@@ -66,13 +52,13 @@ public class ShowFinalModelWizardPage extends WizardPage {
 		this.workingModel = workingModel;
 	}
 
-	public ShowFinalModelWizardPage(String string) {
+	public ShowFinalModelWizardPage(String string, PapilioMain papilioMain) {
 		super(string);
 		setTitle(string + "Final Models Set");
 		setPageComplete(false);
 		adapterFactory = new ComposedAdapterFactory(
 				ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
-
+		this.papilioMain = papilioMain;
 	}
 
 	@Override
@@ -91,15 +77,6 @@ public class ShowFinalModelWizardPage extends WizardPage {
 
 		originalModelTreeView = new TreeViewer(originalModelTreeComposite,
 				SWT.BORDER);
-		
-		Button btnNewButton = new Button(originalModelComposite, SWT.NONE);
-		btnNewButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				serializeModel(getOriginalModel());
-			}
-		});
-		btnNewButton.setText("Save");
 
 		Composite derivedModelComposite = new Composite(container, SWT.NONE);
 		derivedModelComposite.setLayout(new FillLayout(SWT.VERTICAL));
@@ -110,21 +87,15 @@ public class ShowFinalModelWizardPage extends WizardPage {
 
 		derivedModelTreeView = new TreeViewer(derivedModelTreeComposite,
 				SWT.BORDER);
-		
-		Button btnNewButton_1 = new Button(derivedModelComposite, SWT.NONE);
-		btnNewButton_1.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				serializeModel(getWorkingModel());
-			}
-		});
-		btnNewButton_1.setText("Save");
 
 		originalModelTreeView
-				.setContentProvider(new AdapterFactoryContentProvider(adapterFactory));
+				.setContentProvider(new AdapterFactoryContentProvider(
+						adapterFactory));
 		originalModelTreeView.setLabelProvider(new AdapterFactoryLabelProvider(
 				adapterFactory));
-		derivedModelTreeView.setContentProvider(new AdapterFactoryContentProvider(adapterFactory));
+		derivedModelTreeView
+				.setContentProvider(new AdapterFactoryContentProvider(
+						adapterFactory));
 		derivedModelTreeView.setLabelProvider(new AdapterFactoryLabelProvider(
 				adapterFactory));
 		originalModelTreeView
@@ -191,25 +162,30 @@ public class ShowFinalModelWizardPage extends WizardPage {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				PapilioMain.INSTANCE.propagateChanges(monitor, new FlowPropagationModelChangedListener() {
-					
-					@Override
-					public void onModelPropagationFinished(final Model model, final Model derivedModel) {
-						Display.getDefault().asyncExec(new Runnable() {
+				ShowFinalModelWizardPage.this.papilioMain.propagateChanges(
+						monitor, new FlowPropagationModelChangedListener() {
 
 							@Override
-							public void run() {
-								originalModelTreeView.setInput(model);
-								originalModelTreeView.refresh();
-								derivedModelTreeView.setInput(derivedModel);
-								derivedModelTreeView.refresh();
-								ShowFinalModelWizardPage.this.setOriginalModel(model);
-								ShowFinalModelWizardPage.this.setWorkingModel(derivedModel);
+							public void onModelPropagationFinished(
+									final Model model, final Model derivedModel) {
+								Display.getDefault().asyncExec(new Runnable() {
+
+									@Override
+									public void run() {
+										originalModelTreeView.setInput(model);
+										originalModelTreeView.refresh();
+										derivedModelTreeView
+												.setInput(derivedModel);
+										derivedModelTreeView.refresh();
+										ShowFinalModelWizardPage.this
+												.setOriginalModel(model);
+										ShowFinalModelWizardPage.this
+												.setWorkingModel(derivedModel);
+									}
+								});
+
 							}
 						});
-
-					}
-				});
 				return Status.OK_STATUS;
 			}
 
@@ -218,31 +194,4 @@ public class ShowFinalModelWizardPage extends WizardPage {
 		setPageComplete(true);
 		getContainer().updateButtons();
 	}
-	
-	  private void serializeModel(Model model){
-		  IJavaProject javaProject = PapilioMain.INSTANCE.getProject();
-		  IProject project = javaProject.getProject();
-		  
-		  IPath projectPath = project.getFullPath();
-		  String modelName = model.getName() + "_object.xmi";
-		  projectPath = projectPath.append("javamodel");
-		  projectPath = projectPath.append(modelName);
-		  		  
-		  URI fileURI = URI.createURI(projectPath.toString());
-		  
-		  ResourceSet resourceSet = new ResourceSetImpl();
-		  resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", 
-				  new XMIResourceFactoryImpl());
-		  Resource javamodelResource = resourceSet.createResource(fileURI);
-		  
-		  EList<EObject> contents = javamodelResource.getContents();
-		  contents.add(model);
-		  try {
-			javamodelResource.save(null);
-		} catch (IOException e) { 	
-			e.printStackTrace();
-		}
-		  
-	  }
-
 }

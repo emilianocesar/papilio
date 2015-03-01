@@ -39,15 +39,17 @@ public class ShowPropagationAlgorithmGenSetWizardPage extends WizardPage {
 	private TreeViewer genSetOFGTreeView;
 	private TreeViewer genSetASTTreeView;
 	private ComposedAdapterFactory adapterFactory;
+	private PapilioMain papilioMain;
 
-	public ShowPropagationAlgorithmGenSetWizardPage(String string) {
+	public ShowPropagationAlgorithmGenSetWizardPage(String string,
+			PapilioMain papilioMain) {
 		super(string);
 		setTitle(string + "Gen Set");
 		// setDescription("Derived from selected model");
 		setPageComplete(false);
 		adapterFactory = new ComposedAdapterFactory(
 				ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
-
+		this.papilioMain = papilioMain;
 	}
 
 	@Override
@@ -144,23 +146,26 @@ public class ShowPropagationAlgorithmGenSetWizardPage extends WizardPage {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				PapilioMain.INSTANCE.generateGenSet(monitor,
-						new FlowPropagationAlgorithmStepListener() {
-
-							@Override
-							public <T extends ASTNode> void onStepPerformed(
-									final Map<OFGNode, Set<T>> gen) {
-								Display.getDefault().asyncExec(new Runnable() {
+				ShowPropagationAlgorithmGenSetWizardPage.this.papilioMain
+						.generateGenSet(monitor,
+								new FlowPropagationAlgorithmStepListener() {
 
 									@Override
-									public void run() {
+									public <T extends ASTNode> void onStepPerformed(
+											final Map<OFGNode, Set<T>> gen) {
+										Display.getDefault().asyncExec(
+												new Runnable() {
 
-										genSetOFGTreeView.setInput(gen);
+													@Override
+													public void run() {
+
+														genSetOFGTreeView
+																.setInput(gen);
+													}
+												});
 									}
-								});
-							}
 
-						});
+								});
 				return Status.OK_STATUS;
 			}
 

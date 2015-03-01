@@ -32,15 +32,16 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 	private TreeViewer abstractSyntaxTreeView;
 	private TreeViewer asExceptionTreeView;
 	private ComposedAdapterFactory adapterFactory;
+	private PapilioMain papilioMain;
 
-	public ShowAbstractSyntaxWizardPage(String string) {
+	public ShowAbstractSyntaxWizardPage(String string, PapilioMain papilioMain) {
 		super(string);
 		setTitle("Abstract Syntax Tree");
 		setDescription("Derived from selected model");
 		setPageComplete(false);
 		adapterFactory = new ComposedAdapterFactory(
 				ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
-
+		this.papilioMain = papilioMain;
 	}
 
 	@Override
@@ -145,25 +146,28 @@ public class ShowAbstractSyntaxWizardPage extends WizardPage {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				PapilioMain.INSTANCE.generateASProgram(monitor,
-						new PapilioMain.GenerateASProgramListener() {
-
-							@Override
-							public void onASProgramGenerated(
-									final ASProgram program) {
-								Display.getDefault().asyncExec(new Runnable() {
+				ShowAbstractSyntaxWizardPage.this.papilioMain
+						.generateASProgram(monitor,
+								new PapilioMain.GenerateASProgramListener() {
 
 									@Override
-									public void run() {
+									public void onASProgramGenerated(
+											final ASProgram program) {
+										Display.getDefault().asyncExec(
+												new Runnable() {
 
-										abstractSyntaxTreeView
-												.setInput(program);
-										asExceptionTreeView.setInput(program
-												.getErrors());
+													@Override
+													public void run() {
+
+														abstractSyntaxTreeView
+																.setInput(program);
+														asExceptionTreeView
+																.setInput(program
+																		.getErrors());
+													}
+												});
 									}
 								});
-							}
-						});
 				return Status.OK_STATUS;
 			}
 
