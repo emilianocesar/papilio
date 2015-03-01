@@ -80,10 +80,10 @@ public class ASMethodInvocationStatement extends ASStatement implements ASNamedE
 	@Override
 	public Map<String, Object> getOFGEdges() {
 		
-		if(this.isPrimitive()) {
+//		if(this.isPrimitive()) {
 			//si se trata de una invocacion a un metodo primitivo, no genero arcos
-			return Collections.emptyMap();
-		}
+//			return Collections.emptyMap();
+//		}
 		
 		Map<String, Object> result = new HashMap<String, Object>();
 		
