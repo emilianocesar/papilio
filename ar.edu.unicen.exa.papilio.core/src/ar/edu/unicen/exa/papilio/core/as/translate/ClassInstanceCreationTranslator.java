@@ -22,11 +22,9 @@ public class ClassInstanceCreationTranslator extends AbstractTranslator {
 
 	/**
 	 * Traduce un elemento de tipo ClassInstanceCreation a su sintaxis abstracta
-	 * Se crea un elemento ASConstructorInvocationStatement y se asigna como
-	 * lado derecho el nombre completo de la clase del objeto creado, agregando
-	 * una lista con la traduccion de los parametros (si posee) El lado
-	 * izquierdo del statement de creacion se deja para ser completado por el
-	 * metodo invocante
+	 * Se crea un elemento ASConstructorInvocationStatement asociando una referencia al
+	 * elemento que contiene su declaracion ASConstructorDeclaration
+	 * A su vez se agrega una lista de argumentos conteniendo la traducción apra cada parametro real
 	 * 
 	 * @param node
 	 *            El elemento ClassInstanceCreation a traducir
