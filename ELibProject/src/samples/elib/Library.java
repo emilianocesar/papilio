@@ -75,15 +75,13 @@ public class Library {
 		doc.removeLoan();
 	}
 	
-	public boolean borrowDocument(User user, Document doc){
-		if(user == null || doc == null) return false;
+	public void borrowDocument(User user, Document doc){
+		if(user == null || doc == null) return;
 		if(user.numberOfLoans() < MAX_NUMBER_OF_LOANS && doc.isAvailable() && doc.authorizedLoan(user)){
 			Loan loan = null; 
 			loan = new Loan(user, doc);
 			addLoan(loan);
-			return true;
 		}
-		return false;
 	}
 	
 	public boolean returnDocument(Document doc){
@@ -168,8 +166,8 @@ public class Library {
 	
 	public static void main(String[] args) {
 		Library library = new Library();
-		User user = new User("Emiliano", "mi casa", "no tengo");
-		Document doc = new Document("doc1");
+		User user = new User("Emiliano", "Urquiza 3025", "");
+		Document doc = new TechnicalReport("Reverse Engineering of OO code","1234","Emiliano Galitiello.Belen Rolandi");
 		library.borrowDocument(user, doc);
 	}
 }
