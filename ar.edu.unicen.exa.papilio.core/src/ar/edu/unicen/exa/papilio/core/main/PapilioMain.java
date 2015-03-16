@@ -66,7 +66,7 @@ public class PapilioMain {
 	private PapilioDiagram diagram;
 	private ASProgram program;
 	private OFGGraph graph;
-	private ATLResources atlResources;
+	private ATLResources atlResources = new ATLResources();
 	private int step;
 
 	
