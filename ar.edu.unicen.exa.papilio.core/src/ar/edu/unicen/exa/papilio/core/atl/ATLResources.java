@@ -20,7 +20,7 @@ public class ATLResources {
 	}
 
 	public String getUMLMetamodelPath() {
-		return bundle.getEntry("metamodel/uml.ecore").toString();
+		return bundle.getEntry("metamodel/UML.ecore").toString();
 	}
 
 	public String getJavaMetamodelPath() {
@@ -29,6 +29,18 @@ public class ATLResources {
 
 	public URL getClassDiagramTransformationURL() {
 		return bundle.getEntry("transformation/Java2ClassDiagram.asm");
+	}
+
+	public URL getSequenceDiagramTransformationURL() {
+		return bundle.getEntry("transformation/Java2SequenceDiagram.asm");
+	}
+
+	public URL getUseCaseDiagramTransformationURL() {
+		return bundle.getEntry("transformation/Java2UseCaseDiagram.asm");
+	}
+
+	public String getParametersMetamodelPath() {
+		return bundle.getEntry("metamodel/parameters.ecore").toString();
 	}
 
 }

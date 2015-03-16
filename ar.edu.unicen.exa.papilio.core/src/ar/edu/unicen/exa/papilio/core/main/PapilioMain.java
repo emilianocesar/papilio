@@ -210,7 +210,7 @@ public class PapilioMain {
 	}
 
 	public boolean canFinish() {
-		return step == 6;
+		return step == 7;
 	}
 
 	public void setATLResources(ATLResources atlResources) {

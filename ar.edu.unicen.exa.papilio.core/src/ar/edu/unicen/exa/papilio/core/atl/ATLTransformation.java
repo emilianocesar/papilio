@@ -1,6 +1,7 @@
 package ar.edu.unicen.exa.papilio.core.atl;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 
 import org.eclipse.core.resources.IProject;
@@ -233,12 +234,28 @@ public class ATLTransformation {
 		// Loading existing model
 		injector.inject(javaModel, workingModelPath);
 
+		URL transformationURL = null;
+		if (diagram.equals(PapilioDiagram.CLASS)) {
+			transformationURL = atlResources.getClassDiagramTransformationURL();
+		} else if (diagram.equals(PapilioDiagram.SEQUENCE)) {
+			transformationURL = atlResources.getSequenceDiagramTransformationURL();
+			IReferenceModel parametersMetamodel = factory.newReferenceModel();
+			injector.inject(parametersMetamodel, atlResources.getParametersMetamodelPath());
+			IModel inParamsModel = factory.newModel(parametersMetamodel);
+			injector.inject(javaModel, workingModelPath);
+
+			launcher.addInModel(inParamsModel, "inputParams",
+			"parameters");
+
+		} else if (diagram.equals(PapilioDiagram.USECASES)) {
+			transformationURL = atlResources.getUseCaseDiagramTransformationURL();
+		}
 		// Launching
 		launcher.addOutModel(umlModel, "OUT", "UML"); //$NON-NLS-1$ //$NON-NLS-2$
 		launcher.addInModel(javaModel, "IN", "java"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		launcher.launch(ILauncher.RUN_MODE, progressMonitor, Collections
-				.<String, Object> emptyMap(), atlResources.getClassDiagramTransformationURL().openStream());
+				.<String, Object> emptyMap(), transformationURL.openStream());
 
 		// Saving model
 		IProject project = javaProject.getProject();
