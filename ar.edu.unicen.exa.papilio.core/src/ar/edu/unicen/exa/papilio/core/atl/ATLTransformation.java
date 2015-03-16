@@ -219,7 +219,7 @@ public class ATLTransformation {
 		IReferenceModel javaMetamodel = factory.newReferenceModel();
 		
 		injector.inject(umlMetamodel, atlResources.getUMLMetamodelPath());
-		injector.inject(umlMetamodel, atlResources.getJavaMetamodelPath());
+		injector.inject(javaMetamodel, atlResources.getJavaMetamodelPath());
 		
 		// Getting launcher
 		ILauncher launcher = null;
