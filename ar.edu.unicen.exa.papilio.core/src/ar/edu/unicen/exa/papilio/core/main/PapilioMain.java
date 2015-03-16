@@ -111,9 +111,6 @@ public class PapilioMain {
 		OFGGenerator ofgGenerator = new OFGGenerator();	
 		this.graph = ofgGenerator.generateOFG(this.program);
 		listener.onOFGGenerated(this.graph);
-		if (this.getDiagram().equals(PapilioDiagram.USECASES)) {
-			step = 7;
-		}
 	}
 	
 	public void generateGenSet(IProgressMonitor monitor, final FlowPropagationAlgorithmStepListener listener) {
@@ -179,6 +176,9 @@ public class PapilioMain {
 	public void setDiagram(PapilioDiagram diagram) {
 		assert this.diagram != null;
 		this.diagram = diagram;
+		if (diagram.equals(PapilioDiagram.USECASES)) {
+			step = 7;
+		}
 	}
 	
 	public PapilioDiagram getDiagram() {
@@ -215,5 +215,9 @@ public class PapilioMain {
 
 	public void setATLResources(ATLResources atlResources) {
 		this.atlResources = atlResources;
+	}
+
+	public Model getWorkingModel() {
+		return this.model;
 	}
 }

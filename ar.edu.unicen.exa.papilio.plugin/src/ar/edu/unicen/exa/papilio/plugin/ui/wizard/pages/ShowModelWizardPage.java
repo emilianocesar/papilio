@@ -37,9 +37,10 @@ public class ShowModelWizardPage extends WizardPage {
 	private TreeViewer modelTreeViewer;
 	private ComposedAdapterFactory adapterFactory;
 	private PapilioMain papilioMain;
+	private WizardPage lastPage;
 
 	public ShowModelWizardPage(String string, IJavaProject project,
-			PapilioMain papilioMain) {
+			PapilioMain papilioMain, WizardPage lastPage) {
 		super(string);
 		setTitle("Java Model");
 		setDescription("Java Model derived from Project \""
@@ -49,6 +50,7 @@ public class ShowModelWizardPage extends WizardPage {
 				ComposedAdapterFactory.Descriptor.Registry.INSTANCE);
 		setPageComplete(false);
 		this.papilioMain = papilioMain;
+		this.lastPage = lastPage;
 	}
 
 	@Override
@@ -123,16 +125,16 @@ public class ShowModelWizardPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				getContainer().getCurrentPage().getWizard().performFinish();
 				ShowModelWizardPage.this.papilioMain
 						.setDiagram(PapilioDiagram.USECASES);
+				getContainer().showPage(lastPage);
 			}
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				getContainer().getCurrentPage().getWizard().performFinish();
 				ShowModelWizardPage.this.papilioMain
 						.setDiagram(PapilioDiagram.USECASES);
+				getContainer().showPage(lastPage);
 			}
 		});
 

@@ -35,12 +35,13 @@ public class PapilioWizard extends Wizard {
 
 	@Override
 	public void addPages() {
-		pageOne = new ShowModelWizardPage("Choose diagram", project, this.papilioMain);
 		pageTwo = new ShowAbstractSyntaxWizardPage("Abstract Syntax", this.papilioMain);
 		pageThree = new ShowOFGWizardPage("OFG", this.papilioMain);
 		pageFour = new ShowPropagationAlgorithmGenSetWizardPage("", this.papilioMain);
 		pageFive = new ShowPropagationAlgorithmOutSetWizardPage("", this.papilioMain);
 		pageSix = new ShowFinalModelWizardPage("", this.papilioMain);
+		pageOne = new ShowModelWizardPage("Choose diagram", project, this.papilioMain, pageSix);
+
 		addPage(pageOne);
 		addPage(pageTwo);
 		addPage(pageThree);

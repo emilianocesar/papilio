@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 import ar.edu.unicen.exa.papilio.core.as.exception.ASTranslatorException;
+import ar.edu.unicen.exa.papilio.core.diagram.PapilioDiagram;
 import ar.edu.unicen.exa.papilio.core.main.PapilioMain;
 import ar.edu.unicen.exa.papilio.core.main.PapilioMain.FlowPropagationModelChangedListener;
 
@@ -158,42 +159,55 @@ public class ShowFinalModelWizardPage extends WizardPage {
 	}
 
 	private void onEnterPage() {
-		Job job = new Job("Generating Abstract Syntax") {
+		if (this.papilioMain.getDiagram().equals(PapilioDiagram.USECASES)) {
+			originalModelTreeView.setInput(this.papilioMain.getWorkingModel());
+			originalModelTreeView.refresh();
+			derivedModelTreeView.setInput(this.papilioMain.getWorkingModel());
+			derivedModelTreeView.refresh();
+			this.setOriginalModel(this.papilioMain.getWorkingModel());
+			this.setWorkingModel(this.papilioMain.getWorkingModel());
+		} else {
+			Job job = new Job("Generating Abstract Syntax") {
 
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				ShowFinalModelWizardPage.this.papilioMain.propagateChanges(
-						monitor, new FlowPropagationModelChangedListener() {
+				@Override
+				protected IStatus run(IProgressMonitor monitor) {
+					ShowFinalModelWizardPage.this.papilioMain.propagateChanges(
+							monitor, new FlowPropagationModelChangedListener() {
 
-							@Override
-							public void onModelPropagationFinished(
-									final Model model, final Model derivedModel) {
-								Display.getDefault().asyncExec(new Runnable() {
+								@Override
+								public void onModelPropagationFinished(
+										final Model model,
+										final Model derivedModel) {
+									Display.getDefault().asyncExec(
+											new Runnable() {
 
-									@Override
-									public void run() {
-										originalModelTreeView.setInput(model);
-										originalModelTreeView.refresh();
-										derivedModelTreeView
-												.setInput(derivedModel);
-										derivedModelTreeView.refresh();
-										ShowFinalModelWizardPage.this
-												.setOriginalModel(model);
-										ShowFinalModelWizardPage.this
-												.setWorkingModel(derivedModel);
-									}
-								});
+												@Override
+												public void run() {
+													originalModelTreeView
+															.setInput(model);
+													originalModelTreeView
+															.refresh();
+													derivedModelTreeView
+															.setInput(derivedModel);
+													derivedModelTreeView
+															.refresh();
+													ShowFinalModelWizardPage.this
+															.setOriginalModel(model);
+													ShowFinalModelWizardPage.this
+															.setWorkingModel(derivedModel);
+												}
+											});
 
-							}
-						});
-				return Status.OK_STATUS;
-			}
+								}
+							});
+					return Status.OK_STATUS;
+				}
 
-		};
-		job.schedule();
+			};
+			job.schedule();
+		}
 		setPageComplete(true);
 		getContainer().updateButtons();
 	}
-	
-	
+
 }
