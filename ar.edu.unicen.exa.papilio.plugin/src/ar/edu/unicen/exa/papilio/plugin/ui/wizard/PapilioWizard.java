@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.wizard.Wizard;
 
+import ar.edu.unicen.exa.papilio.core.atl.ResourcesLocator;
 import ar.edu.unicen.exa.papilio.core.main.PapilioMain;
 import ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages.ShowAbstractSyntaxWizardPage;
 import ar.edu.unicen.exa.papilio.plugin.ui.wizard.pages.ShowFinalModelWizardPage;
@@ -31,6 +32,7 @@ public class PapilioWizard extends Wizard {
 		super();
 		this.project = project;
 		this.papilioMain = new PapilioMain();
+		this.papilioMain.setATLResources(ResourcesLocator.initATLResources());
 	}
 
 	@Override
@@ -55,6 +57,7 @@ public class PapilioWizard extends Wizard {
 		return this.papilioMain.canFinish();
 	}
 
+	
 	@Override
 	public boolean performFinish() {
 		Job job = new Job("Executing Transformation") {

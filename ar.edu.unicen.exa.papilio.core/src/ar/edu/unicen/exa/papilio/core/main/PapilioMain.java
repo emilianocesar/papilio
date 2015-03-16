@@ -1,8 +1,10 @@
 package ar.edu.unicen.exa.papilio.core.main;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.gmt.modisco.java.ASTNode;
@@ -10,10 +12,12 @@ import org.eclipse.gmt.modisco.java.InstanceSpecification;
 import org.eclipse.gmt.modisco.java.Model;
 import org.eclipse.gmt.modisco.java.Type;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.m2m.atl.core.ATLCoreException;
 import org.eclipse.modisco.infra.discovery.core.exception.DiscoveryException;
 
 import ar.edu.unicen.exa.papilio.core.as.ASGenerator;
 import ar.edu.unicen.exa.papilio.core.as.ASProgram;
+import ar.edu.unicen.exa.papilio.core.atl.ATLResources;
 import ar.edu.unicen.exa.papilio.core.atl.ATLTransformation;
 import ar.edu.unicen.exa.papilio.core.diagram.PapilioDiagram;
 import ar.edu.unicen.exa.papilio.core.model.JavaModelDiscoverer;
@@ -62,6 +66,7 @@ public class PapilioMain {
 	private PapilioDiagram diagram;
 	private ASProgram program;
 	private OFGGraph graph;
+	private ATLResources atlResources;
 	private int step;
 
 	
@@ -190,9 +195,13 @@ public class PapilioMain {
 	
 	public void performTransformation(IProgressMonitor monitor) {
 		assert step == 7;
-		ATLTransformation transformation = new ATLTransformation();
-		String modelPath = transformation.serializeModel(this.workingModel, this.project);
-		transformation.executeTransformation(modelPath, this.diagram, monitor);
+		assert this.atlResources != null;
+		ATLTransformation transformation = new ATLTransformation(this.atlResources);
+		try {
+			transformation.executeTransformation(this.diagram, monitor, this.workingModel, this.project);
+		} catch (ATLCoreException | IOException | CoreException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean finish(IProgressMonitor monitor) {
@@ -202,5 +211,9 @@ public class PapilioMain {
 
 	public boolean canFinish() {
 		return step == 6;
+	}
+
+	public void setATLResources(ATLResources atlResources) {
+		this.atlResources = atlResources;
 	}
 }

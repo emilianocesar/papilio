@@ -123,14 +123,14 @@ public class ShowModelWizardPage extends WizardPage {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				getContainer().showPage(getNextPage());
+				getContainer().getCurrentPage().getWizard().performFinish();
 				ShowModelWizardPage.this.papilioMain
 						.setDiagram(PapilioDiagram.USECASES);
 			}
 
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
-				getContainer().showPage(getNextPage());
+				getContainer().getCurrentPage().getWizard().performFinish();
 				ShowModelWizardPage.this.papilioMain
 						.setDiagram(PapilioDiagram.USECASES);
 			}
@@ -146,8 +146,11 @@ public class ShowModelWizardPage extends WizardPage {
 							IStructuredSelection structuredSelection = (IStructuredSelection) selection;
 							Object firstElement = structuredSelection
 									.getFirstElement();
-							if (firstElement instanceof Package
-									|| firstElement instanceof Model) {
+							if (firstElement instanceof Model) {
+								btnClassDiagram.setEnabled(true);
+								btnSequenceDiagram.setEnabled(false);
+								btnUseCaseDiagram.setEnabled(true);
+							} else if (firstElement instanceof Package) {
 								btnClassDiagram.setEnabled(true);
 								btnSequenceDiagram.setEnabled(false);
 								btnUseCaseDiagram.setEnabled(false);

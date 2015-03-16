@@ -5,18 +5,24 @@ import ar.edu.unicen.exa.papilio.core.ofg.algorithm.implementation.ObjectPropaga
 import ar.edu.unicen.exa.papilio.core.ofg.algorithm.implementation.TypePropagationAlgorithm;
 
 public enum PapilioDiagram {
-	CLASS(new TypePropagationAlgorithm()),
-	SEQUENCE(new ObjectPropagationAlgorithm()),
-	USECASES(null);
+	CLASS(new TypePropagationAlgorithm(), "class"),
+	SEQUENCE(new ObjectPropagationAlgorithm(), "sequence"),
+	USECASES(null, "usecase");
 	
 	private FlowPropagationAlgorithm<?> algorithm;
+	private String name;
 
-	private PapilioDiagram(FlowPropagationAlgorithm<?> algorithm) {
+	private PapilioDiagram(FlowPropagationAlgorithm<?> algorithm, String name) {
 		this.algorithm = algorithm;
+		this.name = name;
 	}
 	
 	public FlowPropagationAlgorithm<?> getAlgorithm() {
 		return this.algorithm;
+	}
+
+	public String getName() {
+		return name;
 	}
 	
 }
