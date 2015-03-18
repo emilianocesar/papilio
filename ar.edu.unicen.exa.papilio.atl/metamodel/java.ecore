@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<ecore:EPackage xmi:version="2.0"
-    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="java"
-    nsURI="http://www.eclipse.org/MoDisco/Java/0.2.incubation/java" nsPrefix="java">
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="java" nsURI="http://www.eclipse.org/MoDisco/Java/0.2.incubation/java"
+    nsPrefix="java">
   <eClassifiers xsi:type="ecore:EClass" name="AbstractMethodDeclaration" abstract="true"
       eSuperTypes="#//BodyDeclaration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="body" ordered="false" eType="#//Block"
@@ -220,8 +219,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="ClassDeclaration" eSuperTypes="#//TypeDeclaration">
     <eStructuralFeatures xsi:type="ecore:EReference" name="superClass" ordered="false"
         eType="#//TypeAccess" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" upperBound="-1"
-        eType="#//InstanceSpecification" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Comment" abstract="true" eSuperTypes="#//ASTNode">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="content" ordered="false"
@@ -624,6 +621,8 @@
   <eClassifiers xsi:type="ecore:EClass" name="Type" abstract="true" eSuperTypes="#//NamedElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="usagesInTypeAccess" ordered="false"
         upperBound="-1" eType="#//TypeAccess" eOpposite="#//TypeAccess/type"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instances" upperBound="-1"
+        eType="#//InstanceSpecification" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TypeAccess" eSuperTypes="#//Expression #//NamespaceAccess">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" ordered="false" lowerBound="1"
@@ -714,9 +713,9 @@
         eType="#//Statement" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="InstanceSpecification" eSuperTypes="#//NamedElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="instanceClass" eType="#//ClassDeclaration"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="instanceType" eType="#//Type"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="usages" upperBound="-1"
         eType="#//AbstractMethodInvocation"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="creationExpression" eType="#//ClassInstanceCreation"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="creationExpression" eType="#//Expression"/>
   </eClassifiers>
 </ecore:EPackage>

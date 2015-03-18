@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.gmt.modisco.java.ASTNode;
 import org.eclipse.gmt.modisco.java.InstanceSpecification;
+import org.eclipse.gmt.modisco.java.MethodDeclaration;
 import org.eclipse.gmt.modisco.java.Model;
 import org.eclipse.gmt.modisco.java.Type;
 import org.eclipse.jdt.core.IJavaProject;
@@ -68,6 +69,7 @@ public class PapilioMain {
 	private OFGGraph graph;
 	private ATLResources atlResources = new ATLResources();
 	private int step;
+	private MethodDeclaration selectedElement;
 
 	
 	public PapilioMain() {
@@ -198,7 +200,7 @@ public class PapilioMain {
 		assert this.atlResources != null;
 		ATLTransformation transformation = new ATLTransformation(this.atlResources);
 		try {
-			transformation.executeTransformation(this.diagram, monitor, this.workingModel, this.project);
+			transformation.executeTransformation(this.diagram, monitor, this.workingModel, this.project, this.selectedElement);
 		} catch (ATLCoreException | IOException | CoreException e) {
 			e.printStackTrace();
 		}
@@ -210,7 +212,7 @@ public class PapilioMain {
 	}
 
 	public boolean canFinish() {
-		return step == 7;
+		return step == 6 || step == 7;
 	}
 
 	public void setATLResources(ATLResources atlResources) {
@@ -219,5 +221,9 @@ public class PapilioMain {
 
 	public Model getWorkingModel() {
 		return this.model;
+	}
+
+	public void setElement(MethodDeclaration selectedElement) {
+		this.selectedElement = selectedElement;
 	}
 }

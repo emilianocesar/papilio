@@ -15,7 +15,9 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.gmt.modisco.java.MethodDeclaration;
 import org.eclipse.gmt.modisco.java.Model;
+import org.eclipse.gmt.modisco.java.Package;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.m2m.atl.core.ATLCoreException;
 import org.eclipse.m2m.atl.core.IExtractor;
@@ -27,6 +29,7 @@ import org.eclipse.m2m.atl.core.launch.ILauncher;
 import org.eclipse.m2m.atl.core.service.CoreService;
 
 import ar.edu.unicen.exa.papilio.core.diagram.PapilioDiagram;
+import parameters.*;
 
 public class ATLTransformation {
 
@@ -37,66 +40,6 @@ public class ATLTransformation {
 		this.atlResources = atlResources;
 	}
 
-//	public IModel runJava2ClassDiagramTransformation(Resource inputModelResource) {
-//
-//		try {
-//
-//			/*
-//			 * Initializations
-//			 */
-//			ILauncher transformationLauncher = new EMFVMLauncher();
-//			ModelFactory modelFactory = new EMFModelFactory();
-//			EMFInjector injector = new EMFInjector();
-//
-//			/*
-//			 * Load metamodels
-//			 */
-//			IReferenceModel javaMetamodel = modelFactory.newReferenceModel();
-//			injector.inject(javaMetamodel, JAVA_METAMODEL_PATH);
-//			IReferenceModel umlMetamodel = modelFactory.newReferenceModel();
-//			injector.inject(umlMetamodel, UML_METAMODEL_PATH);
-//
-//			/*
-//			 * Load models
-//			 */
-//			IModel inJavaModel = modelFactory.newModel(javaMetamodel);
-//
-//			// serialize in memory (because ATL doesn't take a Resource
-//			// directly)
-//			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//			inputModelResource.save(byteArrayOutputStream, null);
-//			ByteArrayInputStream inputStream = new ByteArrayInputStream(
-//					byteArrayOutputStream.toByteArray());
-//
-//			injector.inject(inJavaModel, inputStream,
-//					Collections.<String, Object> emptyMap());
-//
-//			IModel outUmlModel = modelFactory.newModel(umlMetamodel);
-//
-//			/*
-//			 * Run "Java2ClassDiagram" transformation
-//			 */
-//			transformationLauncher.initialize(new HashMap<String, Object>());
-//			transformationLauncher.addInModel(inJavaModel, "IN", "java");
-//			transformationLauncher.addOutModel(outUmlModel, "OUT", "UML");
-////			transformationLauncher.launch(ILauncher.RUN_MODE,
-////					new NullProgressMonitor(), new HashMap<String, Object>(),
-////					new FileInputStream(
-////							ATL_JAVA2CLASSDIAGRAM_TRANSFORMATION_PATH));
-//
-//			return outUmlModel;
-//
-//		} catch (ATLCoreException e) {
-//			e.printStackTrace();
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return null;
-//	}
-//
 //	public IModel runJava2SequenceDiagramTransformation(
 //			Resource inputModelResource, String inParamsModelPath) {
 //
@@ -166,41 +109,7 @@ public class ATLTransformation {
 //
 //	}
 //
-//	public void saveOutputModel(IModel outputModel, String outModelPath) {
-//
-//		try {
-//
-//			IExtractor extractor = new EMFExtractor();
-//			extractor.extract(outputModel, outModelPath);
-//
-//		} catch (ATLCoreException e) {
-//			e.printStackTrace();
-//		}
-//	}
-////
-////	public static void main(String args[]) {
-////
-////		ATLTransformation atlTransformation = new ATLTransformation();
-////		JavaModelDiscoverer discoverer = new JavaModelDiscoverer();
-////
-////		Resource javaElibminModelResource = discoverer
-////				.discoverJavaModelResourceFromXMIUri(JAVA_ELIBMIN_MODEL_PATH);
-////		IModel classDiagramModel = atlTransformation
-////				.runJava2ClassDiagramTransformation(javaElibminModelResource);
-////		atlTransformation.saveOutputModel(classDiagramModel,
-////				UML_CLASSDIAGRAM_ELIBMIN_MODEL_PATH);
-////
-////		Resource javaObjectElibminModelResource = discoverer
-////				.discoverJavaModelResourceFromXMIUri(JAVA_OBJECT_ELIBMIN_MODEL_PATH);
-////		IModel sequenceDiagramModel = atlTransformation
-////				.runJava2SequenceDiagramTransformation(
-////						javaObjectElibminModelResource,
-////						INPUT_PARAMETERS_MODEL_PATH);
-////		atlTransformation.saveOutputModel(sequenceDiagramModel,
-////				UML_SEQUENCEDIAGRAM_ELIBMIN_MODEL_PATH);
-////	}
-//
-	public void executeTransformation(PapilioDiagram diagram, IProgressMonitor progressMonitor, Model model, IJavaProject javaProject) throws ATLCoreException, IOException, CoreException {
+	public void executeTransformation(PapilioDiagram diagram, IProgressMonitor progressMonitor, Model model, IJavaProject javaProject, MethodDeclaration selectedElement) throws ATLCoreException, IOException, CoreException {
 		
 		String workingModelPath = serializeModel(model, javaProject, diagram);
 		IInjector injector = null;
@@ -238,12 +147,13 @@ public class ATLTransformation {
 		if (diagram.equals(PapilioDiagram.CLASS)) {
 			transformationURL = atlResources.getClassDiagramTransformationURL();
 		} else if (diagram.equals(PapilioDiagram.SEQUENCE)) {
+			assert selectedElement != null;
 			transformationURL = atlResources.getSequenceDiagramTransformationURL();
 			IReferenceModel parametersMetamodel = factory.newReferenceModel();
 			injector.inject(parametersMetamodel, atlResources.getParametersMetamodelPath());
 			IModel inParamsModel = factory.newModel(parametersMetamodel);
-			injector.inject(javaModel, workingModelPath);
-
+			String parametersPath = createModelFromParameters(selectedElement, javaProject);
+			injector.inject(inParamsModel, parametersPath);
 			launcher.addInModel(inParamsModel, "inputParams",
 			"parameters");
 
@@ -374,6 +284,59 @@ public class ATLTransformation {
 //			e.printStackTrace();
 //		}
 //	}
+
+	private String createModelFromParameters(MethodDeclaration selectedElement, IJavaProject javaProject) {
+		parameterContainer container = ParametersFactory.eINSTANCE.createparameterContainer();
+		param parameter = ParametersFactory.eINSTANCE.createparam();
+		parameter.setName("methodName");
+		parameter.setValue(getMethodIdentifier(selectedElement));
+		container.getParameters().add(parameter);
+		return serializeParameters(container, javaProject);
+	}
+	
+	private String getMethodIdentifier(MethodDeclaration element) {
+		StringBuilder methodValue = new StringBuilder();
+		String methodName = element.getName();
+		String className = element.getAbstractTypeDeclaration().getName();
+		String packages = getPackageString(element.getAbstractTypeDeclaration().getPackage());
+		methodValue.append(packages);
+		methodValue.append(className);
+		methodValue.append(".");
+		methodValue.append(methodName);
+		return methodValue.toString();
+	}
+	
+	
+	private String getPackageString(Package aPackage) {
+		if (aPackage == null) {
+			return "";
+		}
+		return getPackageString(aPackage.getPackage()) + aPackage.getName() + ".";
+	}
+
+	public String serializeParameters(parameterContainer container, IJavaProject javaProject) {
+		IProject project = javaProject.getProject();
+		IPath projectPath = project.getFullPath();
+		String modelName = "sequence_diagram_parameters.xmi";
+		projectPath = projectPath.append("parameters");
+		projectPath = projectPath.append(modelName);
+
+		URI fileURI = URI.createURI(projectPath.toString());
+
+		ResourceSet resourceSet = new ResourceSetImpl();
+		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap()
+				.put("xmi", new XMIResourceFactoryImpl());
+		Resource javamodelResource = resourceSet.createResource(fileURI);
+
+		EList<EObject> contents = javamodelResource.getContents();
+		contents.add(container);
+		try {
+			javamodelResource.save(null);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return projectPath.toString();
+	}
 
 	public String serializeModel(Model model, IJavaProject javaProject, PapilioDiagram diagram) {
 		IProject project = javaProject.getProject();

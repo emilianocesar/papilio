@@ -38,6 +38,7 @@ public class ShowModelWizardPage extends WizardPage {
 	private ComposedAdapterFactory adapterFactory;
 	private PapilioMain papilioMain;
 	private WizardPage lastPage;
+	private MethodDeclaration selectedElement;
 
 	public ShowModelWizardPage(String string, IJavaProject project,
 			PapilioMain papilioMain, WizardPage lastPage) {
@@ -107,6 +108,9 @@ public class ShowModelWizardPage extends WizardPage {
 				getContainer().showPage(getNextPage());
 				ShowModelWizardPage.this.papilioMain
 						.setDiagram(PapilioDiagram.SEQUENCE);
+				ShowModelWizardPage.this.papilioMain
+				.setElement(ShowModelWizardPage.this.selectedElement);
+
 			}
 
 			@Override
@@ -141,6 +145,7 @@ public class ShowModelWizardPage extends WizardPage {
 		modelTreeViewer
 				.addSelectionChangedListener(new ISelectionChangedListener() {
 
+
 					@Override
 					public void selectionChanged(SelectionChangedEvent event) {
 						ISelection selection = event.getSelection();
@@ -157,6 +162,7 @@ public class ShowModelWizardPage extends WizardPage {
 								btnSequenceDiagram.setEnabled(false);
 								btnUseCaseDiagram.setEnabled(false);
 							} else if (firstElement instanceof MethodDeclaration) {
+								ShowModelWizardPage.this.selectedElement = (MethodDeclaration)firstElement;
 								btnClassDiagram.setEnabled(false);
 								btnSequenceDiagram.setEnabled(true);
 								btnUseCaseDiagram.setEnabled(false);
